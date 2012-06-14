@@ -143,7 +143,6 @@ how the `DSpec\Compiler` is tested in `spec/DSpec/CompilerSpec.php`
 Todo
 ----
 
-* Take more than one file (and dirs) as arguments
 * Config files
 * Command line options
 * Formatters
