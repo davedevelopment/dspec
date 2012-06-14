@@ -1,0 +1,43 @@
+#!/usr/bin/env php
+<?php
+
+if (is_file(__DIR__ . '/../../../autoload.php')) {
+    require __DIR__ . '/../../../autoload.php';
+} else if (is_file(__DIR__ . '/../vendor/autoload.php')) {
+    require __DIR__ . '/../vendor/autoload.php';
+}
+
+use DSpec\DSpec as ds;
+
+function describe($description, \Closure $closure) {
+    ds::describe($description, $closure);
+}
+
+function it($example, \Closure $closure) {
+    ds::it($example, $closure);
+}
+
+function context($context, \Closure $closure) {
+    ds::context($context, $closure);
+}
+
+function beforeEach(\Closure $closure) {
+    ds::beforeEach($closure);
+}
+
+function afterEach(\Closure $closure) {
+    ds::afterEach($closure);
+}
+
+function pending($msg = "{no message}") {
+    ds::pending($msg);
+}
+
+function skip($msg = "{no message}") {
+    ds::skip($msg);
+}
+
+$app = new DSpec\Console\DSpecApplication;
+$app->run();
+
+

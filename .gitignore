@@ -1,0 +1,4 @@
+tmp
+vendor
+composer.lock
+bin/behat

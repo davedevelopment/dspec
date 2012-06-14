@@ -1,0 +1,35 @@
+{
+    "name": "davedevelopment/dspec",
+
+    "require-dev": {
+        "behat/behat": "*",
+        "davedevelopment/montserrat": "*",
+        "mockery/mockery": "*",
+        "davedevelopment/hamcrest-php": "*"
+    },
+
+    "require": {
+        "symfony/console": "2.1.*",
+        "symfony/event-dispatcher": "2.1.*"
+    },
+
+    "suggest": {
+        "mockery/mockery": "For mocks and stubs"
+    },
+
+    "autoload": {
+        "psr-0": {
+            "DSpec": "src/"
+        }
+    },
+
+    "config": {
+        "bin-dir": "bin"
+    },
+
+    "repositories": [
+        {"type": "vcs", "url": "http://github.com/davedevelopment/hamcrest-php"}
+    ],
+
+    "bin": ["bin/dspec"]
+}
