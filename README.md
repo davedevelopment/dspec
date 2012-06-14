@@ -33,7 +33,7 @@ require_once 'hamcrest/Hamcrest.php';
 
 describe("Bowling", function() {
 
-    beforeEach(function() {                                  // run before every it() that follows, including in child describes/contexts
+    beforeEach(function() {                                  // run before every sibling and descendant it() 
         $this->bowling = new Bowling;                        // PHP 5.4's closure binding allows the use of this
     }); 
 
