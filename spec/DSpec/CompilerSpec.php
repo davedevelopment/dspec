@@ -3,8 +3,7 @@
 /**
  * Need a bootstrap for this
  */
-set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__ . '/../../vendor/davedevelopment/hamcrest-php/hamcrest');
-require_once 'Hamcrest.php';
+require_once __DIR__ . '/../../vendor/davedevelopment/hamcrest-php/hamcrest/Hamcrest.php';
 
 use Mockery as m;
 
