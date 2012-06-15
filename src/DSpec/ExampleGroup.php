@@ -34,6 +34,7 @@ class ExampleGroup extends Node
      */
     public function run(Reporter $reporter)
     {
+        $this->setErrorHandler();
         foreach ($this->examples as $example) {
 
             if ($example instanceof ExampleGroup) {
@@ -59,7 +60,7 @@ class ExampleGroup extends Node
                 $reporter->exampleFailed($example);
             }
         }
-
+        $this->restoreErrorHandler();
     }
 
     /**
@@ -154,5 +155,25 @@ class ExampleGroup extends Node
     public function getClosure()
     {
         return $this->closure;
+    }
+
+    /**
+     * Set error handler
+     *
+     */
+    public function setErrorHandler()
+    {
+        set_error_handler(function ($errno, $errstr, $errfile, $errline ) {
+            throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+        });
+    }
+
+    /**
+     * Restore error handler
+     *
+     */
+    public function restoreErrorHandler()
+    {
+        restore_error_handler();
     }
 }
