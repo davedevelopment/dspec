@@ -15,9 +15,23 @@ class Scope
 {
     protected $data = array();
 
+    protected $persistant = array();
+
     public function tearDown()
     {
-        $this->data = array();
+        $persistant = array();
+        foreach ($this->data as $key => $value) {
+            if (!empty($this->persistant[$key])) {
+                $persistant[$key] = $value;
+            }
+        }
+        $this->data = $persistant;
+    }
+
+    public function persist($key, $value)
+    {
+        $this->data[$key] = $value;
+        $this->persistant[$key] = true;
     }
 
     public function __set($name, $value)
