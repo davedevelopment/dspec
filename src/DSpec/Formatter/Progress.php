@@ -110,18 +110,19 @@ class Progress implements EventSubscriberInterface
         $this->output->writeln("");
         $this->output->writeln(sprintf("Finished in %s seconds", round($duration, 5)));
 
-        $failures = $e->getReporter()->getFailures();
-        $total = $e->getExampleGroup()->total();
-        $format = count($failures) > 0 ? 'error' : 'info';
-        $r = $e->getReporter();
+        $total        = $e->getExampleGroup()->total();
+        $r            = $e->getReporter();
+        $failures     = $r->getFailures();
+        $failureCount = count($failures);
+        $format       = $failureCount > 0 ? 'error' : 'info';
 
         $resultLine = sprintf(
             "<%s>%d example%s, %d failure%s", 
             $format, 
             $total, 
             $total != 1 ? 's' : '', 
-            count($failures), 
-            count($failures) != 1 ? 's' : ''
+            $failureCount, 
+            $failureCount != 1 ? 's' : ''
         );
 
         if (count($r->getPending())) {
@@ -137,13 +138,26 @@ class Progress implements EventSubscriberInterface
         $this->output->writeln($resultLine);
 
         $groups = array();
+
+        /**
+         * These need grouping by describe/context
+         */
         foreach($failures as $f) {
             $indent = 0;
             foreach($f->getAncestors() as $eg) {
-                $this->output->writeln("<comment>" . str_repeat(" ", $indent) . $eg->getTitle() . "</comment>");
+                $this->output->writeln(sprintf(
+                    "<comment>%s%s</comment>",
+                    str_repeat(" ", $indent),
+                    $eg->getTitle()
+                ));
                 $indent+=2;
             }
-            $this->output->writeln("<comment>" . str_repeat(" ", $indent) . ($f->getFailureException()->getMessage() ?: "{no message}") . "</comment>");
+
+            $this->output->writeln(sprintf(
+                "<comment>%s%s</comment>",
+                str_repeat(" ", $indent),
+                $f->getFailureException()->getMessage() ?: "{no message}"
+            ));
         }
     }
 
@@ -152,7 +166,7 @@ class Progress implements EventSubscriberInterface
      *
      * @param string $string
      */
-    public function writeProgress($string)
+    protected function writeProgress($string)
     {
         $this->output->write($string, ++$this->counter % 80 == 0);
     }
