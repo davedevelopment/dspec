@@ -2,6 +2,8 @@
 
 namespace DSpec;
 
+use DSpec\Context\AbstractContext;
+
 /**
  * This file is part of dspec
  *
@@ -35,9 +37,9 @@ class Example extends Node
     /**
      * {@inheritDoc}
      */
-    public function run(Reporter $reporter)
+    public function run(AbstractContext $context)
     {
-        call_user_func($this->closure);
+        $context->run($this->closure);
     }
 
     /**

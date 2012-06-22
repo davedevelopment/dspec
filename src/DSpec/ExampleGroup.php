@@ -2,6 +2,8 @@
 
 namespace DSpec;
 
+use DSpec\Context\AbstractContext;
+
 /**
  * This file is part of dspec
  *
@@ -13,8 +15,8 @@ namespace DSpec;
 
 class ExampleGroup extends Node 
 {
-    protected $closure;
     protected $parent;
+    protected $context;
 
     protected $examples = array();
     protected $hooks = array(
@@ -22,10 +24,10 @@ class ExampleGroup extends Node
         'afterEach' => array(),
     );
 
-    public function __construct($description, \Closure $closure, ExampleGroup $parent = null)
+    public function __construct($description, AbstractContext $context, ExampleGroup $parent = null)
     {
         $this->title = $description;
-        $this->closure = $closure;
+        $this->context = $context;
         $this->parent = $parent;
     }
 
@@ -43,9 +45,10 @@ class ExampleGroup extends Node
             }
 
             try {
-                $this->runHooks('beforeEach', $reporter);
-                $example->run($reporter);
-                $this->runHooks('afterEach', $reporter);
+                $context = clone $this->context;
+                $this->runHooks('beforeEach', $context);
+                $example->run($context);
+                $this->runHooks('afterEach', $context, true);
                 $reporter->examplePassed($example);
                 $example->passed();
 
@@ -67,18 +70,23 @@ class ExampleGroup extends Node
      * Traverse ancestry running hooks
      *
      * @param string $name
-     * @param Reporter $reporter
      */
-    public function runHooks($name, Reporter $reporter)
+    public function runHooks($name, AbstractContext $context, $reverse = false)
     {
         $parent = $this->getParent();
 
         if ($parent) {
-            $parent->runHooks($name, $reporter);
+            $parent->runHooks($name, $context, $reverse);
+        }
+
+        $hooks = $this->hooks[$name];
+        
+        if ($reverse) {
+            $hooks = array_reverse($hooks);
         }
         
-        foreach ($this->hooks[$name] as $hook) {
-            $hook->run($reporter); 
+        foreach ($hooks as $hook) {
+            $hook->run($context); 
         }
     }
 
@@ -149,12 +157,9 @@ class ExampleGroup extends Node
         return $descendants;
     }
 
-    /**
-     * @return \Closure
-     */
-    public function getClosure()
+    public function getContext()
     {
-        return $this->closure;
+        return $this->context;
     }
 
     /**

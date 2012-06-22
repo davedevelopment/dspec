@@ -2,6 +2,8 @@
 
 namespace DSpec;
 
+use DSpec\Context\SpecContext;
+
 /**
  * This file is part of dspec
  *
@@ -17,87 +19,30 @@ namespace DSpec;
  */
 class DSpec
 {
-    protected static $compiler;
+    protected static $context;
 
-    /**
-     * @param string $description
-     * @param Closure $closure
-     */
-    public static function describe($description, \Closure $closure)
+    public static function __callStatic($name, $arguments)
     {
-        static::getCompiler()->describe($description, $closure);
-    }
-
-
-    /**
-     * @param string $context
-     * @param Closure $closure
-     */
-    public static function context($context, \Closure $closure)
-    {
-        static::getCompiler()->context($context, $closure);
+        return call_user_func_array(array(static::getContext(), $name), $arguments);
     }
 
     /**
-     * @param string $example
-     * @param Closure $closure
+     * @param SpecContext $context;
      */
-    public static function it($example, \Closure $closure)
+    public static function getContext()
     {
-        static::getCompiler()->it($example, $closure);
-    }
-
-    /**
-     * @param \Closure $closure
-     */
-    public static function beforeEach(\Closure $closure)
-    {
-        static::getCompiler()->beforeEach($closure);
-    }
-
-    /**
-     * @param \Closure $closure
-     */
-    public static function afterEach(\Closure $closure)
-    {
-        static::getCompiler()->afterEach($closure);
-    }
-
-    /**
-     * @param string $message
-     */
-    public static function pending($message = "{no message}")
-    {
-        throw new Exception\PendingExampleException($message);
-    }
-
-    /**
-     * @param string $message
-     */
-    public static function skip($message = "{no message}")
-    {
-        throw new Exception\SkippedExampleException($message);
-    }
-
-    /**
-     * @return Compiler
-     */
-    public static function getCompiler()
-    {
-        if (static::$compiler) {
-            return static::$compiler;
+        if (static::$context) {
+            return static::$context;
         }
 
-        return static::$compiler = new Compiler();
+        return static::$context = new SpecContext();
     }
 
     /**
-     * Set Compiler
-     *
-     * @param Compiler $compiler;
+     * @param SpecContext $context;
      */
-    public static function setCompiler(Compiler $compiler)
+    public static function setContext(SpecContext $context)
     {
-        static::$compiler = $compiler;
+        static::$context = $context;
     }
 }

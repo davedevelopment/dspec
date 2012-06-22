@@ -7,7 +7,8 @@ use Mockery as m;
 describe("ExampleGroup", function() {
 
     beforeEach(function() {
-        $this->eg = new DSpec\ExampleGroup("test", function() {});
+        $this->context = m::mock(new DSpec\Context\AbstractContext);
+        $this->eg = new DSpec\ExampleGroup("test", $this->context);
     });
 
     describe("run()", function() {
@@ -33,32 +34,34 @@ describe("ExampleGroup", function() {
         });
 
         it("runs hooks", function() {
-            $closure = function() { static $count = 0; return ++$count; };
+            $obj = (object) ['count' => 0];
+            $closure = function() use ($obj) { $obj->count++; };
             $this->eg->add(new DSpec\Hook("beforeEach", $closure));
             $this->eg->add(new DSpec\Example("one", $closure));
             $this->eg->add(new DSpec\Hook("afterEach", $closure));
             $this->eg->run($this->reporter);
-            assertThat($closure(), equalTo(4));
+            assertThat($obj->count, 3);
         });
 
         it("run any examples", function() {
-            $closure = function() { static $count = 0; return ++$count; };
+            $obj = (object) ['count' => 0];
+            $closure = function() use ($obj) { $obj++; };
             $this->eg->add(new DSpec\Example("one", $closure));
             $this->eg->add(new DSpec\Example("two", $closure));
             $this->eg->run($this->reporter);
-            assertThat($closure(), equalTo(3));
+            assertThat($obj->count, 2);
         });
 
         describe("results", function() {
-            it("captures and reports failures", function() {
-                $this->eg->add($ex = new DSpec\Example("fail", function() { throw new Exception(); }));
-                $this->reporter->shouldReceive("exampleFailed")->with($ex)->once();
-                $this->eg->run($this->reporter);
-            });
-
             it("captures and reports skipped examples", function() {
                 $this->eg->add($ex = new DSpec\Example("skip", function() { throw new DSpec\Exception\SkippedExampleException(); }));
                 $this->reporter->shouldReceive("exampleSkipped")->with($ex)->once();
+                $this->eg->run($this->reporter);
+            });
+
+            it("captures and reports failures", function() {
+                $this->eg->add($ex = new DSpec\Example("fail", function() { throw new Exception(); }));
+                $this->reporter->shouldReceive("exampleFailed")->with($ex)->once();
                 $this->eg->run($this->reporter);
             });
 

@@ -37,6 +37,10 @@ function skip($msg = "{no message}") {
     ds::skip($msg);
 }
 
+function fail($msg = "{no message}") {
+    ds::fail($msg);
+}
+
 $app = new DSpec\Console\DSpecApplication;
 $app->run();
 

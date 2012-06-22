@@ -10,7 +10,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\Finder\Finder;
-use DSpec\Compiler;
+use DSpec\Context\SpecContext;
 use DSpec\Reporter;
 use DSpec\ExampleGroup;
 use DSpec\DSpec as ds;
@@ -74,25 +74,25 @@ class DSpecCommand extends Command
         }
 
         $dispatcher = new EventDispatcher;
-        $suite      = new ExampleGroup("Suite", function() {});
-        $compiler   = new Compiler($suite, $dispatcher);
+        $context    = new SpecContext();
+        $suite      = new ExampleGroup("Suite", $context);
         $reporter   = new Reporter($dispatcher);
         $formatter  = new Progress($output);
 
         $dispatcher->addSubscriber($formatter);
-        ds::setCompiler($compiler);
+        ds::setContext($context);
 
         /**
          * The reporter could dispatch these events, assuming the example group 
          * alerts it to example group start/finish
          */    
         $dispatcher->dispatch(Events::COMPILER_START, new Event());
-        $exampleGroup = $compiler->compile($files);
+        $context->load($files, $suite);
         $dispatcher->dispatch(Events::COMPILER_END, new Event());
 
-        $dispatcher->dispatch(Events::SUITE_START, new SuiteStartEvent($exampleGroup));
-        $exampleGroup->run($reporter);
-        $dispatcher->dispatch(Events::SUITE_END, new SuiteEndEvent($exampleGroup, $reporter));
+        $dispatcher->dispatch(Events::SUITE_START, new SuiteStartEvent($suite));
+        $suite->run($reporter);
+        $dispatcher->dispatch(Events::SUITE_END, new SuiteEndEvent($suite, $reporter));
 
         return count($reporter->getFailures()) ? 1 : 0;
     }

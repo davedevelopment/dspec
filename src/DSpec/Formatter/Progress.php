@@ -64,7 +64,7 @@ class Progress implements EventSubscriberInterface
      */
     public function onExampleFail(ExampleFailEvent $e)
     {
-        $this->writeProgress("<error>F</error>");
+        $this->writeProgress("<error>.</error>");
     }
 
 
@@ -81,7 +81,7 @@ class Progress implements EventSubscriberInterface
      */
     public function onExamplePend(ExamplePendEvent $e)
     {
-        $this->writeProgress('<comment>P</comment>');
+        $this->writeProgress('<comment>.</comment>');
     }
 
     /**
@@ -89,7 +89,7 @@ class Progress implements EventSubscriberInterface
      */
     public function onExampleSkip(ExampleSkipEvent $e)
     {
-        $this->writeProgress('<comment>S</comment>');
+        $this->writeProgress('<comment>.</comment>');
     }
 
     /**

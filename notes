@@ -1,0 +1,3 @@
+Compiler creates context objects assigns to ExampleGroup
+Context is cloned before being assigned to each child ExampleGroup
+Contexp is cloned before running each example (w/hooks)

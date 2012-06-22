@@ -1,9 +1,11 @@
 <?php
 
-namespace DSpec;
+namespace DSpec\Context;
 
 use SplStack;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use DSpec\ExampleGroup;
+use DSpec\Example;
+use DSpec\Hook;
 
 /**
  * This file is part of dspec
@@ -14,23 +16,19 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  * file that was distributed with this source code.
  */
 
-class Compiler extends Scope 
+class SpecContext extends AbstractContext 
 {
     /**
      * Prefixed to avoid clashes with execution scope
      */
     protected $__stack;
-    protected $__dispatcher;
 
     /**
      * @param ExampleGroup $eg
-     * @param EventDispatcherInterface $dispatcher
      */
-    public function __construct(ExampleGroup $eg, EventDispatcherInterface $dispatcher)
+    public function __construct()
     {
-        $this->__dispatcher = $dispatcher;
         $this->__stack = new SplStack();
-        $this->__stack->push($eg);
     }
 
     /**
@@ -41,12 +39,11 @@ class Compiler extends Scope
      */
     public function describe($description, \Closure $closure)
     {
-        $closure = $closure->bindTo($this);
-        $group = new ExampleGroup($description, $closure);
-        $group->setParent($this->__stack->top());
+        $context = clone $this;
+        $group = new ExampleGroup($description, $context, $this->__stack->top());
         $this->__stack->top()->add($group);
         $this->__stack->push($group);
-        $closure();
+        $context->run($closure);
         $this->__stack->pop();
         return $group;
     }
@@ -70,7 +67,6 @@ class Compiler extends Scope
      */
     public function it($example, \Closure $closure)
     {
-        $closure = $closure->bindTo($this);
         $example = new Example($example, $closure);
         $example->setParent($this->__stack->top());
         $this->__stack->top()->add($example);
@@ -84,7 +80,6 @@ class Compiler extends Scope
      */
     public function beforeEach($closure)
     {
-        $closure = $closure->bindTo($this);
         $this->__stack->top()->add(new Hook('beforeEach', $closure));
     }
 
@@ -95,18 +90,19 @@ class Compiler extends Scope
      */
     public function afterEach($closure)
     {
-        $closure = $closure->bindTo($this);
         $this->__stack->top()->add(new Hook('afterEach', $closure));
     }
 
     /**
-     * Compile
-     *
      * @param array $files
      * @return ExampleGroup
      */
-    public function compile(array $files)
+    public function load(array $files, ExampleGroup $eg = null)
     {
+        $eg = $eg ?: new ExampleGroup("Suite", $this);
+
+        $this->__stack->push($eg);
+
         foreach($files as $f)
         {
             include $f;
@@ -114,6 +110,4 @@ class Compiler extends Scope
 
         return $this->__stack->bottom();
     }
-
-
 }
