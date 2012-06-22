@@ -22,7 +22,7 @@ Feature: specs argument
             });
             """
         When I run `dspec`
-        Then the output should contain "1 example, 0 failures"
+        Then the output should contain "1 example passed"
 
     Scenario: Pass a directory 
         Given a file named "spec/TestSpec.php" with:
@@ -43,7 +43,7 @@ Feature: specs argument
             });
             """
         When I run `dspec spec`
-        Then the output should contain "1 example, 0 failures"
+        Then the output should contain "1 example passed"
 
 
     Scenario: Pass multiple directories
@@ -65,7 +65,7 @@ Feature: specs argument
             });
             """
         When I run `dspec spec spec2`
-        Then the output should contain "2 examples, 1 failure"
+        Then the output should contain "1 of 2 examples failed"
 
     Scenario: Pass a dir and a file
         Given a file named "spec/TestSpec.php" with:
@@ -86,7 +86,7 @@ Feature: specs argument
             });
             """
         When I run `dspec spec spec2/Test.php`
-        Then the output should contain "2 examples, 1 failure"
+        Then the output should contain "1 of 2 examples failed"
 
     Scenario: Pass a glob
         Given a file named "spec/IncludeSpec.php" with:
@@ -107,4 +107,4 @@ Feature: specs argument
             });
             """
         When I run `dspec spec/Include*`
-        Then the output should contain "1 example, 0 failures"
+        Then the output should contain "1 example passed"

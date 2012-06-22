@@ -21,4 +21,4 @@ Feature: Clean context per example
             });
             """
         When I run `dspec context.feature`
-        Then the output should contain "2 examples, 0 failures"
+        Then the output should contain "2 examples passed"

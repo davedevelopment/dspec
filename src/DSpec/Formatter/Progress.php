@@ -5,6 +5,7 @@ namespace DSpec\Formatter;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 use DSpec\Event\ExampleFailEvent;
 use DSpec\Event\ExamplePassEvent;
 use DSpec\Event\ExamplePendEvent;
@@ -45,6 +46,14 @@ class Progress implements EventSubscriberInterface
     public function __construct(OutputInterface $output)
     {
         $this->output = $output;
+
+        $this->output->getFormatter()->setStyle('progress-fail', new OutputFormatterStyle('red'));
+        $this->output->getFormatter()->setStyle('progress-bold-fail', new OutputFormatterStyle('red', null, array('bold')));
+        $this->output->getFormatter()->setStyle('progress-pending', new OutputFormatterStyle('blue'));
+        $this->output->getFormatter()->setStyle('progress-skipped', new OutputFormatterStyle('yellow'));
+        $this->output->getFormatter()->setStyle('progress-pass', new OutputFormatterStyle('green'));
+        $this->output->getFormatter()->setStyle('progress-bold-pass', new OutputFormatterStyle('green', null, array('bold')));
+        $this->output->getFormatter()->setStyle('progress-meta', new OutputFormatterStyle('white', null, array()));
     }
 
     static public function getSubscribedEvents()
@@ -64,7 +73,7 @@ class Progress implements EventSubscriberInterface
      */
     public function onExampleFail(ExampleFailEvent $e)
     {
-        $this->writeProgress("<error>.</error>");
+        $this->writeProgress("<progress-fail>.</progress-fail>");
     }
 
 
@@ -73,7 +82,7 @@ class Progress implements EventSubscriberInterface
      */
     public function onExamplePass(ExamplePassEvent $e)
     {
-        $this->writeProgress('<info>.</info>');
+        $this->writeProgress('<progress-pass>.</progress-pass>');
     }
 
     /**
@@ -81,7 +90,7 @@ class Progress implements EventSubscriberInterface
      */
     public function onExamplePend(ExamplePendEvent $e)
     {
-        $this->writeProgress('<comment>.</comment>');
+        $this->writeProgress('<progress-pending>.</progress-pending>');
     }
 
     /**
@@ -89,7 +98,7 @@ class Progress implements EventSubscriberInterface
      */
     public function onExampleSkip(ExampleSkipEvent $e)
     {
-        $this->writeProgress('<comment>.</comment>');
+        $this->writeProgress('<progress-skipped>.</progress-skipped>');
     }
 
     /**
@@ -108,34 +117,45 @@ class Progress implements EventSubscriberInterface
         $duration = microtime(true) - $this->startTime;
         $this->output->writeln("");
         $this->output->writeln("");
-        $this->output->writeln(sprintf("Finished in %s seconds", round($duration, 5)));
 
         $total        = $e->getExampleGroup()->total();
         $r            = $e->getReporter();
         $failures     = $r->getFailures();
         $failureCount = count($failures);
+        $passCount    = count($r->getPasses());
         $format       = $failureCount > 0 ? 'error' : 'info';
 
-        $resultLine = sprintf(
-            "<%s>%d example%s, %d failure%s", 
-            $format, 
-            $total, 
-            $total != 1 ? 's' : '', 
-            $failureCount, 
-            $failureCount != 1 ? 's' : ''
-        );
+        if ($failureCount) {
+            $resultLine = sprintf(
+                "<progress-bold-fail>✖</progress-bold-fail> <progress-fail>%d of %d examples failed</progress-fail>", 
+                $failureCount,
+                $total
+            );
+
+        } else {
+            $resultLine = sprintf(
+                "<progress-bold-pass>✔</progress-bold-pass> <progress-pass>%d example%s passed</progress-pass>", 
+                $total,
+                $total != 1 ? 's' : ''
+            );
+        }
 
         if (count($r->getPending())) {
-            $resultLine.= sprintf(", %d pending", count($r->getPending()));
+            $resultLine.= sprintf(
+                ", <progress-pending>%d pending</progress-pending>", 
+                count($r->getPending())
+            );
         }
 
         if (count($r->getSkipped())) {
-            $resultLine.= sprintf(", %d skipped", count($r->getSkipped()));
+            $resultLine.= sprintf(
+                ", <progress-skipped>%d skipped</progress-skipped>", 
+                count($r->getSkipped())
+            );
         }
 
-        $resultLine.= "</$format>";
 
-        $this->output->writeln($resultLine);
+        $this->output->writeln(sprintf("%s <progress-meta>(%ss)</progress-meta>", $resultLine, round($duration, 5)));
 
         $groups = array();
 
@@ -159,6 +179,7 @@ class Progress implements EventSubscriberInterface
                 $f->getFailureException()->getMessage() ?: "{no message}"
             ));
         }
+
     }
 
     /**

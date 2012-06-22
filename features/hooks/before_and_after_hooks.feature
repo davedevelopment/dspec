@@ -38,7 +38,7 @@ Feature: before and after hooks
             });
             """
         When I run `dspec BeforeEachSpec.php`
-        Then the output should contain "3 examples, 0 failures"
+        Then the output should contain "3 examples passed"
 
     Scenario: before/after blocks are run in order
         Given a file named "BeforeAfterOrderSpec.php" with:
@@ -86,7 +86,7 @@ Feature: before and after hooks
             });
             """
         When I run `dspec ExceptionInBeforeEachSpec.php`
-        Then the output should contain "1 example, 1 failure"
+        Then the output should contain "1 of 1 examples failed"
 
 
     Scenario: exception in afterEach is captured and reported as failure
@@ -104,4 +104,4 @@ Feature: before and after hooks
             });
             """
         When I run `dspec ExceptionInAfterEachSpec.php`
-        Then the output should contain "1 example, 1 failure"
+        Then the output should contain "1 of 1 examples failed"
