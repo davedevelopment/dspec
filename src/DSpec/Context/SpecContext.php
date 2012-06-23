@@ -65,8 +65,11 @@ class SpecContext extends AbstractContext
      * @param string $example
      * @param Closure $closure
      */
-    public function it($example, \Closure $closure)
+    public function it($example, \Closure $closure = null)
     {
+        if ($closure === null) {
+            $closure = function() { $this->pending(); };
+        }
         $example = new Example($example, $closure);
         $example->setParent($this->__stack->top());
         $this->__stack->top()->add($example);
