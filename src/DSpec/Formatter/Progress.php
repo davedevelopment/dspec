@@ -135,8 +135,8 @@ class Progress implements EventSubscriberInterface
         } else {
             $resultLine = sprintf(
                 "<progress-bold-pass>✔</progress-bold-pass> <progress-pass>%d example%s passed</progress-pass>", 
-                $total,
-                $total != 1 ? 's' : ''
+                $passCount,
+                $passCount != 1 ? 's' : ''
             );
         }
 

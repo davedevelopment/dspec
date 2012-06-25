@@ -15,7 +15,7 @@ Feature: Skipped examples
             });
             """
         When I run `dspec`
-        Then the output should contain "1 example passed, 1 skipped"
+        Then the output should contain "0 examples passed, 1 skipped"
 
     Scenario: Mark an example as skipped with function
         Given a file named "spec/SkippedSpec.php" with:
@@ -29,5 +29,5 @@ Feature: Skipped examples
             });
             """
         When I run `dspec`
-        Then the output should contain "1 example passed, 1 skipped"
+        Then the output should contain "0 examples passed, 1 skipped"
 

@@ -15,7 +15,7 @@ Feature: Pending examples
             });
             """
         When I run `dspec`
-        Then the output should contain "1 example passed, 1 pending"
+        Then the output should contain "0 examples passed, 1 pending"
 
     Scenario: Mark an example as pending with function
         Given a file named "spec/PendingSpec.php" with:
@@ -29,7 +29,7 @@ Feature: Pending examples
             });
             """
         When I run `dspec`
-        Then the output should contain "1 example passed, 1 pending"
+        Then the output should contain "0 examples passed, 1 pending"
 
     Scenario: Mark an example as pending with no closure
         Given a file named "spec/PendingSpec.php" with:
@@ -41,5 +41,5 @@ Feature: Pending examples
             });
             """
         When I run `dspec`
-        Then the output should contain "1 example passed, 1 pending"
+        Then the output should contain "0 examples passed, 1 pending"
 
