@@ -62,17 +62,35 @@ For more examples, checkout the `features` or the `spec` dirs.
 Execution Scope
 ---------------
 
-By default, DSpec does not tear down the scope before each example, but you can
-choose to during a before or after hook:
+The closures in the various methods get bound to a Context object, which is
+cloned throughout the test run, in an attempt to share context where
+appropriate, but allow each example a clean version of that shared context. This
+is a last resort though, proper setup and tear down in beforeEach and afterEach
+hooks should provide adequate isolation.
 
 ``` php
 <?php
 
-beforeEach(function() {
-    $this->tearDown();
+describe("Context", function() {
+
+    $this->objA = new stdClass;
+
+    it("has acccess to objA", function() {
+        if (!isset($this->objA)) {
+            throw new Exception("Could not access objA");
+        }
+
+        $this->objB = new stdClass;
+    });
+
+    it("does not have access to objB", function() {
+        if (isset($this->objB)) {
+            throw new Exception("Could access objB");
+        }
+    });
 });
 
-```
+``` php
 
 Using $this is totally optional, using regular variable binding with your closures
 is an alternative option, but can be a bit messier;
