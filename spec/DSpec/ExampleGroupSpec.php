@@ -11,6 +11,30 @@ describe("ExampleGroup", function() {
         $this->eg = new DSpec\ExampleGroup("test", $this->context);
     });
 
+    describe("total()", function() {
+        it("returns the total number of examples in this group and it's descendants", function() {
+            $closure = function() {};
+            $innerEg = new DSpec\ExampleGroup("Inner", $this->context, $this->eg);
+            $innerEg->add(new DSpec\Example("one", $closure));
+            $this->eg->add($innerEg);
+            $this->eg->add(new DSpec\Hook("beforeEach", $closure));
+            $this->eg->add(new DSpec\Example("one", $closure));
+            assertThat($this->eg->total(), equalTo(2));
+        });
+    });
+
+    describe("getDescendants()", function() {
+        it("returns the descendants and itself", function() {
+            $closure = function() {};
+            $innerEg = new DSpec\ExampleGroup("Inner", $this->context, $this->eg);
+            $innerEg->add(new DSpec\Example("one", $closure));
+            $this->eg->add($innerEg);
+            $this->eg->add(new DSpec\Hook("beforeEach", $closure));
+            $this->eg->add(new DSpec\Example("one", $closure));
+            assertThat(count($this->eg->getDescendants()), equalTo(4));
+        });
+    });
+
     describe("run()", function() {
 
         beforeEach(function() {
@@ -33,14 +57,37 @@ describe("ExampleGroup", function() {
             $child->mockery_verify();
         });
 
-        it("runs hooks", function() {
-            $obj = (object) ['count' => 0];
-            $closure = function() use ($obj) { $obj->count++; };
-            $this->eg->add(new DSpec\Hook("beforeEach", $closure));
-            $this->eg->add(new DSpec\Example("one", $closure));
-            $this->eg->add(new DSpec\Hook("afterEach", $closure));
-            $this->eg->run($this->reporter);
-            assertThat($obj->count, 3);
+
+        context("when hooks are present", function() {
+
+            beforeEach(function() {
+                $this->obj = $obj = (object)['string' => ''];
+                $this->factory = function($letter) use ($obj) {
+                    return function() use ($letter, $obj) { $obj->string.= $letter;};
+                };
+            });
+
+            it("runs hooks in the order added", function() {
+                $this->eg->add(new DSpec\Hook("beforeEach", $this->factory->__invoke("A")));
+                $this->eg->add(new DSpec\Example("one", $this->factory->__invoke("B")));
+                $this->eg->add(new DSpec\Hook("afterEach", $this->factory->__invoke("C")));
+                $this->eg->run($this->reporter);
+                assertThat($this->obj->string, equalTo("ABC"));
+            });
+
+            it("runs them in the in the correct order", function() {
+                $innerEg = new DSpec\ExampleGroup("Inner", $this->context, $this->eg);
+                $innerEg->add(new DSpec\Hook("beforeEach", $this->factory->__invoke("A")));
+                $innerEg->add(new DSpec\Example("one", $this->factory->__invoke("B")));
+                $innerEg->add(new DSpec\Hook("afterEach", $this->factory->__invoke("C")));
+                $this->eg->add($innerEg);
+                $this->eg->add(new DSpec\Hook("beforeEach", $this->factory->__invoke("D")));
+                $this->eg->add(new DSpec\Hook("afterEach", $this->factory->__invoke("E")));
+                $this->eg->add(new DSpec\Example("one", $this->factory->__invoke("F")));
+                $this->eg->run($this->reporter);
+                assertThat($this->obj->string, equalTo("DABCEDFE"));
+            });
+
         });
 
         it("run any examples", function() {
