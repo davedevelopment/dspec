@@ -64,6 +64,11 @@ class Example extends Node
         return $this;
     }
 
+    public function isFailure()
+    {
+        return $this->result == static::RESULT_FAILED;
+    }
+
     /**
      * Set passed
      *

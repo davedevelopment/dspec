@@ -140,6 +140,10 @@ class ExampleGroup extends Node
         $this->hooks[$hook->getName()][] = $hook;
     }
 
+    public function getChildren()
+    {
+        return $this->examples;
+    }
 
     /**
      * @return array
@@ -158,6 +162,22 @@ class ExampleGroup extends Node
         }
 
         return $descendants;
+    }
+
+    public function hasFailures()
+    {
+        foreach ($this->examples as $e) {
+            if ($e instanceof Example) {
+                if ($e->isFailure()) {
+                    return true;
+                }
+            } else {
+                if ($e->hasFailures()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public function getContext()

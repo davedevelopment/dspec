@@ -157,29 +157,42 @@ class Progress implements EventSubscriberInterface
 
         $this->output->writeln(sprintf("%s <progress-meta>(%ss)</progress-meta>", $resultLine, round($duration, 5)));
 
-        $groups = array();
+        if ($failureCount) {
+            $this->output->writeln("");
+            $this->output->writeln("<progress-fail>Failures</progress-fail>:");
+            $this->output->writeln("");
 
-        /**
-         * These need grouping by describe/context
-         */
-        foreach($failures as $f) {
-            $indent = 0;
-            foreach($f->getAncestors() as $eg) {
-                $this->output->writeln(sprintf(
-                    "<comment>%s%s</comment>",
-                    str_repeat(" ", $indent),
-                    $eg->getTitle()
-                ));
-                $indent+=2;
-            }
+            /**
+             * I'm a bad man
+             */
+            $outputter = function($eg, $output, $callback, $indent) {
+                if ($eg->hasFailures()) {
+                    $output->writeln(str_repeat(" ", $indent) . $eg->getTitle());
+                    foreach ($eg->getChildren() as $child) {
+                        if ($child instanceof \DSpec\ExampleGroup) {
+                            $callback($child, $output, $callback, $indent + 2);
+                        } else {
+                            if ($child->isFailure()) {
+                                $output->writeln(sprintf(
+                                    "%s<progress-bold-fail>✖</progress-bold-fail> <progress-fail>%s</progress-fail>",
+                                    str_repeat(" ", $indent + 2),
+                                    $child->getTitle()
+                                ));
 
-            $this->output->writeln(sprintf(
-                "<comment>%s%s</comment>",
-                str_repeat(" ", $indent),
-                $f->getFailureException()->getMessage() ?: "{no message}"
-            ));
+                                $failureMessage = $child->getFailureException()->getMessage();
+                                $lines = explode("\n", $failureMessage);
+                                foreach ($lines as $n => $line) {
+                                    $lines[$n] = str_repeat(" ", $indent + 4) . $line;
+                                }
+                                $output->writeln(implode("\n", $lines));
+                            }
+                        }
+                    }
+                }
+            };
+
+            $outputter($e->getExampleGroup(), $this->output, $outputter, 0);
         }
-
     }
 
     /**

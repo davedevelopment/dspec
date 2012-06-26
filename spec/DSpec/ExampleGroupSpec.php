@@ -139,4 +139,43 @@ describe("ExampleGroup", function() {
         });
     });
 
+
+    describe("hasFailures()", function() {
+
+        it("returns true if any examples failed", function() {
+            $example = new DSpec\Example("test", function() {});
+            $example->failed(new Exception());
+            $this->eg->add($example);
+            assertThat($this->eg->hasFailures(), equalTo(true));
+        });
+
+        it("returns false if all examples passed", function() {
+            $example = new DSpec\Example("test", function() {});
+            $example->passed();
+            $this->eg->add($example);
+            assertThat($this->eg->hasFailures(), equalTo(false));
+        });
+
+        it("returns true if child example groups have failed examples", function() {
+            $example = new DSpec\Example("test", function() {});
+            $example->passed();
+            $this->eg->add($example);
+            $example = new DSpec\Example("test", function() {});
+            $example->failed(new Exception());
+            $innerEg = new DSpec\ExampleGroup("test", $this->context, $this->eg);
+            $innerEg->add($example);
+            $this->eg->add($innerEg);
+            assertThat($this->eg->hasFailures(), equalTo(true));
+        });
+
+        it("returns false if child example groups dont have failed examples", function() {
+            $example = new DSpec\Example("test", function() {});
+            $example->passed();
+            $innerEg = new DSpec\ExampleGroup("test", $this->context, $this->eg);
+            $innerEg->add($example);
+            $this->eg->add($innerEg);
+            $this->eg->add($example);
+            assertThat($this->eg->hasFailures(), equalTo(false));
+        });
+    });
 });
