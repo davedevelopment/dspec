@@ -74,20 +74,23 @@ class ExampleGroup extends Node
     public function runHooks($name, AbstractContext $context, $reverse = false)
     {
         $parent = $this->getParent();
-
-        if ($parent) {
-            $parent->runHooks($name, $context, $reverse);
-        }
-
         $hooks = $this->hooks[$name];
-        
-        if ($reverse) {
-            $hooks = array_reverse($hooks);
-        }
-        
-        foreach ($hooks as $hook) {
-            $hook->run($context); 
-        }
+
+        if ($reverse) { 
+            foreach (array_reverse($hooks) as $hook) {
+                $hook->run($context); 
+            }
+            if ($parent) {
+                $parent->runHooks($name, $context, $reverse);
+            }
+        } else {
+            if ($parent) {
+                $parent->runHooks($name, $context, $reverse);
+            }
+            foreach (array_reverse($hooks) as $hook) {
+                $hook->run($context); 
+            }
+        } 
     }
 
     public function add($object)
