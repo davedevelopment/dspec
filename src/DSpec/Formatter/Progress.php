@@ -11,6 +11,8 @@ use DSpec\Event\ExamplePassEvent;
 use DSpec\Event\ExamplePendEvent;
 use DSpec\Event\ExampleSkipEvent;
 use DSpec\Events;
+use DSpec\Reporter;
+use DSpec\ExampleGroup;
 
 /**
  * This file is part of dspec
@@ -21,13 +23,8 @@ use DSpec\Events;
  * file that was distributed with this source code.
  */
 
-class Progress implements EventSubscriberInterface
+class Progress extends AbstractFormatter implements FormatterInterface
 {
-    /**
-     * @var OutputInterface
-     */
-    protected $output;
-
     /**
      * @var int
      */
@@ -38,24 +35,6 @@ class Progress implements EventSubscriberInterface
      */
     protected $startTime = 0;
 
-    /**
-     * Constructor
-     *
-     * @param OutputInterface $output
-     */
-    public function __construct(OutputInterface $output)
-    {
-        $this->output = $output;
-
-        $this->output->getFormatter()->setStyle('progress-fail', new OutputFormatterStyle('red'));
-        $this->output->getFormatter()->setStyle('progress-bold-fail', new OutputFormatterStyle('red', null, array('bold')));
-        $this->output->getFormatter()->setStyle('progress-pending', new OutputFormatterStyle('blue'));
-        $this->output->getFormatter()->setStyle('progress-skipped', new OutputFormatterStyle('yellow'));
-        $this->output->getFormatter()->setStyle('progress-pass', new OutputFormatterStyle('green'));
-        $this->output->getFormatter()->setStyle('progress-bold-pass', new OutputFormatterStyle('green', null, array('bold')));
-        $this->output->getFormatter()->setStyle('progress-meta', new OutputFormatterStyle('white', null, array()));
-    }
-
     static public function getSubscribedEvents()
     {
         return array(
@@ -63,7 +42,6 @@ class Progress implements EventSubscriberInterface
             Events::EXAMPLE_PASS => array('onExamplePass', 0),
             Events::EXAMPLE_PEND => array('onExamplePend', 0),
             Events::EXAMPLE_SKIP => array('onExampleSkip', 0),
-            Events::SUITE_END    => array('onSuiteEnd', 0),
             Events::COMPILER_START => array('onCompilerStart', 0),
         );
     }
@@ -73,7 +51,7 @@ class Progress implements EventSubscriberInterface
      */
     public function onExampleFail(ExampleFailEvent $e)
     {
-        $this->writeProgress("<progress-fail>.</progress-fail>");
+        $this->writeProgress("<dspec-fail>.</dspec-fail>");
     }
 
 
@@ -82,7 +60,7 @@ class Progress implements EventSubscriberInterface
      */
     public function onExamplePass(ExamplePassEvent $e)
     {
-        $this->writeProgress('<progress-pass>.</progress-pass>');
+        $this->writeProgress('<dspec-pass>.</dspec-pass>');
     }
 
     /**
@@ -90,7 +68,7 @@ class Progress implements EventSubscriberInterface
      */
     public function onExamplePend(ExamplePendEvent $e)
     {
-        $this->writeProgress('<progress-pending>.</progress-pending>');
+        $this->writeProgress('<dspec-pending>.</dspec-pending>');
     }
 
     /**
@@ -98,7 +76,7 @@ class Progress implements EventSubscriberInterface
      */
     public function onExampleSkip(ExampleSkipEvent $e)
     {
-        $this->writeProgress('<progress-skipped>.</progress-skipped>');
+        $this->writeProgress('<dspec-skipped>.</dspec-skipped>');
     }
 
     /**
@@ -112,14 +90,13 @@ class Progress implements EventSubscriberInterface
     /**
      * @param Event
      */
-    public function onSuiteEnd(Event $e)
+    public function format(Reporter $r, ExampleGroup $suite)
     {
         $duration = microtime(true) - $this->startTime;
         $this->output->writeln("");
         $this->output->writeln("");
 
-        $total        = $e->getExampleGroup()->total();
-        $r            = $e->getReporter();
+        $total        = $suite->total();
         $failures     = $r->getFailures();
         $failureCount = count($failures);
         $passCount    = count($r->getPasses());
@@ -127,14 +104,14 @@ class Progress implements EventSubscriberInterface
 
         if ($failureCount) {
             $resultLine = sprintf(
-                "<progress-bold-fail>✖</progress-bold-fail> <progress-fail>%d of %d examples failed</progress-fail>", 
+                "<dspec-bold-fail>✖</dspec-bold-fail> <dspec-fail>%d of %d examples failed</dspec-fail>", 
                 $failureCount,
                 $total
             );
 
         } else {
             $resultLine = sprintf(
-                "<progress-bold-pass>✔</progress-bold-pass> <progress-pass>%d example%s passed</progress-pass>", 
+                "<dspec-bold-pass>✔</dspec-bold-pass> <dspec-pass>%d example%s passed</dspec-pass>", 
                 $passCount,
                 $passCount != 1 ? 's' : ''
             );
@@ -142,57 +119,23 @@ class Progress implements EventSubscriberInterface
 
         if (count($r->getPending())) {
             $resultLine.= sprintf(
-                ", <progress-pending>%d pending</progress-pending>", 
+                ", <dspec-pending>%d pending</dspec-pending>", 
                 count($r->getPending())
             );
         }
 
         if (count($r->getSkipped())) {
             $resultLine.= sprintf(
-                ", <progress-skipped>%d skipped</progress-skipped>", 
+                ", <dspec-skipped>%d skipped</dspec-skipped>", 
                 count($r->getSkipped())
             );
         }
 
 
-        $this->output->writeln(sprintf("%s <progress-meta>(%ss)</progress-meta>", $resultLine, round($duration, 5)));
+        $this->output->writeln(sprintf("%s <dspec-meta>(%ss)</dspec-meta>", $resultLine, round($duration, 5)));
 
-        if ($failureCount) {
-            $this->output->writeln("");
-            $this->output->writeln("<progress-fail>Failures</progress-fail>:");
-            $this->output->writeln("");
-
-            /**
-             * I'm a bad man
-             */
-            $outputter = function($eg, $output, $callback, $indent) {
-                if ($eg->hasFailures()) {
-                    $output->writeln(str_repeat(" ", $indent) . $eg->getTitle());
-                    foreach ($eg->getChildren() as $child) {
-                        if ($child instanceof \DSpec\ExampleGroup) {
-                            $callback($child, $output, $callback, $indent + 2);
-                        } else {
-                            if ($child->isFailure()) {
-                                $output->writeln(sprintf(
-                                    "%s<progress-bold-fail>✖</progress-bold-fail> <progress-fail>%s</progress-fail>",
-                                    str_repeat(" ", $indent + 2),
-                                    $child->getTitle()
-                                ));
-
-                                $failureMessage = $child->getFailureException()->getMessage();
-                                $lines = explode("\n", $failureMessage);
-                                foreach ($lines as $n => $line) {
-                                    $lines[$n] = str_repeat(" ", $indent + 4) . $line;
-                                }
-                                $output->writeln(implode("\n", $lines));
-                            }
-                        }
-                    }
-                }
-            };
-
-            $outputter($e->getExampleGroup(), $this->output, $outputter, 0);
-        }
+        $failureTree = (new FailureTree)->setOutput($this->output);
+        $failureTree->format($r, $suite);
     }
 
     /**

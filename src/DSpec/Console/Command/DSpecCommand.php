@@ -77,7 +77,7 @@ class DSpecCommand extends Command
         $context    = new SpecContext();
         $suite      = new ExampleGroup("Suite", $context);
         $reporter   = new Reporter($dispatcher);
-        $formatter  = new Progress($output);
+        $formatter  = (new Progress())->setOutput($output);
 
         $dispatcher->addSubscriber($formatter);
         ds::setContext($context);
@@ -93,6 +93,8 @@ class DSpecCommand extends Command
         $dispatcher->dispatch(Events::SUITE_START, new SuiteStartEvent($suite));
         $suite->run($reporter);
         $dispatcher->dispatch(Events::SUITE_END, new SuiteEndEvent($suite, $reporter));
+
+        $formatter->format($reporter, $suite);
 
         return count($reporter->getFailures()) ? 1 : 0;
     }
