@@ -6,6 +6,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Command\HelpCommand;
 
 /**
  * This file is part of dspec
@@ -53,7 +54,7 @@ class DSpecApplication extends Application
      */
     protected function getDefaultCommands()
     {
-        return array(new Command\DSpecCommand());
+        return array(new HelpCommand(), new Command\DSpecCommand());
     }
 
     /**

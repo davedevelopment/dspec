@@ -94,7 +94,7 @@ class DSpecCommand extends Command
         $suite->run($reporter);
         $dispatcher->dispatch(Events::SUITE_END, new SuiteEndEvent($suite, $reporter));
 
-        $formatter->format($reporter, $suite);
+        $formatter->format($reporter, $suite, $input->getOption('verbose'));
 
         return count($reporter->getFailures()) ? 1 : 0;
     }

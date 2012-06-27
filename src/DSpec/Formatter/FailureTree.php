@@ -25,7 +25,7 @@ use DSpec\ExampleGroup;
 
 class FailureTree extends AbstractFormatter implements FormatterInterface
 {
-    public function format(Reporter $r, ExampleGroup $suite)
+    public function format(Reporter $r, ExampleGroup $suite, $verbosity = false)
     {
         if ($suite->hasFailures()) {
             $this->output->writeln("");
@@ -35,7 +35,7 @@ class FailureTree extends AbstractFormatter implements FormatterInterface
             /**
              * I'm a bad man
              */
-            $outputter = function($eg, $output, $callback, $indent) {
+            $outputter = function($eg, $output, $callback, $indent) use ($verbosity) {
                 if ($eg->hasFailures()) {
                     $output->writeln(str_repeat(" ", $indent) . $eg->getTitle());
                     foreach ($eg->getChildren() as $child) {
@@ -49,7 +49,14 @@ class FailureTree extends AbstractFormatter implements FormatterInterface
                                     $child->getTitle()
                                 ));
 
-                                $failureMessage = $child->getFailureException()->getMessage();
+                                $e = $child->getFailureException();
+
+                                if ($verbosity) {
+                                    $failureMessage = (string) $e;
+                                } else {
+                                    $failureMessage = $e->getMessage();
+                                }
+
                                 $lines = explode("\n", $failureMessage);
                                 foreach ($lines as $n => $line) {
                                     $lines[$n] = str_repeat(" ", $indent + 4) . $line;

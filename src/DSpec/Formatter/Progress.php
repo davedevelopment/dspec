@@ -90,7 +90,7 @@ class Progress extends AbstractFormatter implements FormatterInterface
     /**
      * @param Event
      */
-    public function format(Reporter $r, ExampleGroup $suite)
+    public function format(Reporter $r, ExampleGroup $suite, $verbose = false)
     {
         $duration = microtime(true) - $this->startTime;
         $this->output->writeln("");
@@ -135,7 +135,7 @@ class Progress extends AbstractFormatter implements FormatterInterface
         $this->output->writeln(sprintf("%s <dspec-meta>(%ss)</dspec-meta>", $resultLine, round($duration, 5)));
 
         $failureTree = (new FailureTree)->setOutput($this->output);
-        $failureTree->format($r, $suite);
+        $failureTree->format($r, $suite, $verbose);
     }
 
     /**
