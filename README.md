@@ -163,9 +163,14 @@ how the `DSpec\Compiler` is tested in `spec/DSpec/CompilerSpec.php`
 Todo
 ----
 
+* Optional declaration of functions in global namespace
+* More tests
+* Use Cilex - especially if they sort Pimple out for providers, will make it
+  nice and extensible
+* Logging would be nice for debugging
 * Config files
 * Command line options
-* Formatters
+* Formatters and using multiple formatters, to stdout or files
 * Documentation
 
 Copyright
