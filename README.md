@@ -59,6 +59,15 @@ $ vendor/bin/dspec BowlingSpec.php
 
 For more examples, checkout the `features` or the `spec` dirs.
 
+Config
+------
+
+There are a few command line switches, `dspec --help` will show you those. You
+can also use a configuration file, by specifying one on the command line, or by
+having a file name `dspec.yml` or `dspec.yml.dist` in the current working
+directory. Checkout the projects `dspec.yml.dist` for some examples of
+configuration.
+
 Execution Scope
 ---------------
 
@@ -163,15 +172,17 @@ how the `DSpec\Compiler` is tested in `spec/DSpec/CompilerSpec.php`
 Todo
 ----
 
+* Split `DSpec\Console\Command\DSpecCommand` in to several processers ala Behat
 * Optional declaration of functions in global namespace
 * More tests
-* Use Cilex - especially if they sort Pimple out for providers, will make it
-  nice and extensible
 * Logging would be nice for debugging
-* Config files
-* Command line options
-* Formatters and using multiple formatters, to stdout or files
 * Documentation
+
+Contributing
+------------
+
+Check the todo list above, there's a good chance I'm already working on those.
+Fork, branch, write tests, write code, refactor, repeat, pull request. 
 
 Copyright
 ---------
