@@ -54,7 +54,7 @@ class DSpecApplication extends Application
      */
     protected function getDefaultCommands()
     {
-        return array(new HelpCommand(), new Command\DSpecCommand());
+        return array(new HelpCommand());
     }
 
     /**

@@ -1,0 +1,7 @@
+default:
+    extensions:
+        Cilex\Provider\MonologServiceProvider:
+            monolog.logfile: dspec.log
+            monolog.level: 100
+            monolog.name: dspec
+    paths: [ 'spec' ]

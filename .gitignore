@@ -3,3 +3,4 @@ vendor
 composer.lock
 bin/behat
 .rbenv-version
+dspec.log

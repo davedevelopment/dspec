@@ -41,7 +41,11 @@ function fail($msg = "{no message}") {
     ds::fail($msg);
 }
 
-$app = new DSpec\Console\DSpecApplication;
+$app = new Cilex\Application('dspec');
+$app['console'] = $app->share(function() {
+    return new DSpec\Console\DSpecApplication;
+});
+$app->command(new DSpec\Console\Command\DSpecCommand);
 $app->run();
 
 

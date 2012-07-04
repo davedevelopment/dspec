@@ -2,7 +2,6 @@
 
 namespace DSpec\Console\Command;
 
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -18,6 +17,9 @@ use DSpec\Events;
 use DSpec\Event\SuiteStartEvent;
 use DSpec\Event\SuiteEndEvent;
 use DSpec\Formatter\Progress;
+use DSpec\Provider\ConfigServiceProvider;
+use Cilex\Command\Command;
+use Cilex\Provider\MonologServiceProvider;
 
 /**
  * This file is part of dspec
@@ -42,10 +44,37 @@ class DSpecCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $paths = $input->getArgument('specs');
+        /**
+         * Process options
+         */
+        $log = $this->getContainer()->register(new ConfigServiceProvider());
 
+        $app = $this->getContainer();
+            
+        $app['config.path'] = $input->getOption('config');
+        $app['config.default_paths'] = array('dspec.yml', 'dspec.yml.dist', 'dspec/dspec.yml', 'dspec/dspec.yml.dist');
+        $app['config.defaults'] = array(
+            'default' => array(
+                'verbose' => $input->getOption('verbose'),
+                'extensions' => array(),
+            ),
+        );
+
+        $profile = 'default';
+        $config = $app['config']->default;
+
+        // extensions
+        foreach($config->extensions as $class => $options) {
+            $app->register(new $class, (array) $options);
+        }
+
+        // paths
+
+        $paths = $input->getArgument('specs');
         if (empty($paths)) {
-            $paths = array("./spec");
+            $paths = isset($config->paths) 
+                ? (array) $config->paths
+                : array("./spec");
         }
 
         $files = array();
