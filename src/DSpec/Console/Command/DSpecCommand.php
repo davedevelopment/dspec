@@ -6,7 +6,9 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\Finder\Finder;
 use DSpec\Context\SpecContext;
@@ -40,18 +42,22 @@ class DSpecCommand extends Command
             ->addArgument('specs', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'Files/dirs to run')
             ->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Path to a configuration file')
             ->addOption('profile', 'p', InputOption::VALUE_REQUIRED, 'Chosen configuration profile')
-            ->addOption('bootstrap', 'b', InputOption::VALUE_REQUIRED, 'A php bootstrap file');
+            ->addOption('bootstrap', 'b', InputOption::VALUE_REQUIRED, 'A php bootstrap file')
+            ->addOption('formatter', 'f', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Formatter to use');
+
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $app = $this->getContainer();
+
+        $app['dispatcher'] = new EventDispatcher;
+
         /**
          * Process options
          */
-        $log = $this->getContainer()->register(new ConfigServiceProvider());
-
-        $app = $this->getContainer();
+        $app->register(new ConfigServiceProvider());
             
         $app['config.path'] = $input->getOption('config');
         $app['config.default_paths'] = array('dspec.yml', 'dspec.yml.dist', 'dspec/dspec.yml', 'dspec/dspec.yml.dist');
@@ -59,6 +65,8 @@ class DSpecCommand extends Command
             'default' => array(
                 'verbose' => $input->getOption('verbose'),
                 'extensions' => array(),
+                'formatters' => array(),
+                'paths' => array(),
             ),
         );
 
@@ -70,6 +78,18 @@ class DSpecCommand extends Command
                 throw new \InvalidArgumentException("profile:$profile not found");
             }
             $config = (object) array_merge((array) $config, (array) $app['config']->$profile);
+        }
+
+        /**
+         * We can't set these in the defaults as we don't want them merging, 
+         * only adding if nothing else present.
+         */
+        if (empty($config->paths)) {
+            $config->paths[] = './spec';
+        }
+
+        if (empty($config->formatters)) {
+            $config->formatters['progress'] = true;
         }
 
         $bootstrap = $input->getOption('bootstrap') ?: isset($config->bootstrap) ? $config->bootstrap : null;
@@ -88,12 +108,7 @@ class DSpecCommand extends Command
 
         // paths
 
-        $paths = $input->getArgument('specs');
-        if (empty($paths)) {
-            $paths = isset($config->paths) 
-                ? (array) $config->paths
-                : array("./spec");
-        }
+        $paths = $input->getArgument('specs') ?: $config->paths;
 
         $files = array();
         foreach ($paths as $p) {
@@ -120,28 +135,70 @@ class DSpecCommand extends Command
             return 0;
         }
 
-        $dispatcher = new EventDispatcher;
+        // formatters
+        $formatters = array();
+        $requestedFormatters = $config->formatters;
+
+        if (count($input->getOption('formatter'))) {
+            $requestedFormatters = array();
+            foreach ($input->getOption('formatter') as $f) {
+                $parts = explode(':', $f);
+                $requestedFormatters[$parts[0]] = isset($parts[1]) ? (object)['out' => $parts[1]] : (object)[];
+            }
+        }
+
+        foreach($requestedFormatters as $f => $options) {
+
+            $class = false;
+            if (class_exists($f)) {
+                $class = $f;
+            } else if (class_exists('\\DSpec\\Formatter\\' . ucfirst($f))) {
+                $class = '\\DSpec\\Formatter\\' . ucfirst($f);
+            } else {
+                throw new \InvalidArgumentException("formatter:$f not found");
+            }
+
+            $out = $output;
+            if (isset($options->out)) {
+                $fh = fopen($options->out, 'a', false);
+                if (!$fh) {
+                    throw new \InvalidArgumentException("Could not open {$options['out']}");
+                }
+                $out = new StreamOutput($fh);
+            }
+
+            $options = (array) $options;
+            $formatters[] = (new $class($options))->setOutput($out);
+        }
+
+        foreach ($formatters as $formatter) {
+            if ($formatter instanceof EventSubscriberInterface) {
+                $app['dispatcher']->addSubscriber($formatter);
+            }
+        }
+
+        // context and run
         $context    = new SpecContext();
         $suite      = new ExampleGroup("Suite", $context);
-        $reporter   = new Reporter($dispatcher);
-        $formatter  = (new Progress())->setOutput($output);
+        $reporter   = new Reporter($app['dispatcher']);
 
-        $dispatcher->addSubscriber($formatter);
         ds::setContext($context);
 
         /**
          * The reporter could dispatch these events, assuming the example group 
          * alerts it to example group start/finish
          */    
-        $dispatcher->dispatch(Events::COMPILER_START, new Event());
+        $app['dispatcher']->dispatch(Events::COMPILER_START, new Event());
         $context->load($files, $suite);
-        $dispatcher->dispatch(Events::COMPILER_END, new Event());
+        $app['dispatcher']->dispatch(Events::COMPILER_END, new Event());
 
-        $dispatcher->dispatch(Events::SUITE_START, new SuiteStartEvent($suite));
+        $app['dispatcher']->dispatch(Events::SUITE_START, new SuiteStartEvent($suite));
         $suite->run($reporter);
-        $dispatcher->dispatch(Events::SUITE_END, new SuiteEndEvent($suite, $reporter));
+        $app['dispatcher']->dispatch(Events::SUITE_END, new SuiteEndEvent($suite, $reporter));
 
-        $formatter->format($reporter, $suite, $input->getOption('verbose'));
+        foreach($formatters as $f) {
+            $f->format($reporter, $suite, $config->verbose);
+        }
 
         return count($reporter->getFailures()) ? 1 : 0;
     }

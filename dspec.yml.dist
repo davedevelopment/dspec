@@ -5,3 +5,5 @@ default:
             monolog.level: 100
             monolog.name: dspec
     paths: [ 'spec' ]
+    formatters:
+        progress: ~

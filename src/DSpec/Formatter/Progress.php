@@ -37,13 +37,28 @@ class Progress extends AbstractFormatter implements FormatterInterface
 
     static public function getSubscribedEvents()
     {
-        return array(
+        return array_merge(parent::getSubscribedEvents(), array(
             Events::EXAMPLE_FAIL => array('onExampleFail', 0),
             Events::EXAMPLE_PASS => array('onExamplePass', 0),
             Events::EXAMPLE_PEND => array('onExamplePend', 0),
             Events::EXAMPLE_SKIP => array('onExampleSkip', 0),
             Events::COMPILER_START => array('onCompilerStart', 0),
-        );
+        ));
+    }
+
+    public function format(Reporter $r, ExampleGroup $suite, $verbose = false)
+    {
+        $this->output->writeln("");
+        $this->output->writeln("");
+        $summary = (new Summary(['startTime' => $this->startTime]))->setOutput($this->output);
+        $summary->format($r, $suite, $verbose);
+        $failureTree = (new FailureTree)->setOutput($this->output);
+        $failureTree->format($r, $suite, $verbose);
+    }
+
+    public function onCompilerStart(Event $e)
+    {
+        $this->startTime = microtime(true);
     }
 
     /**
@@ -77,65 +92,6 @@ class Progress extends AbstractFormatter implements FormatterInterface
     public function onExampleSkip(ExampleSkipEvent $e)
     {
         $this->writeProgress('<dspec-skipped>.</dspec-skipped>');
-    }
-
-    /**
-     * @param Event
-     */
-    public function onCompilerStart(Event $e)
-    {
-        $this->startTime = microtime(true);
-    }
-
-    /**
-     * @param Event
-     */
-    public function format(Reporter $r, ExampleGroup $suite, $verbose = false)
-    {
-        $duration = microtime(true) - $this->startTime;
-        $this->output->writeln("");
-        $this->output->writeln("");
-
-        $total        = $suite->total();
-        $failures     = $r->getFailures();
-        $failureCount = count($failures);
-        $passCount    = count($r->getPasses());
-        $format       = $failureCount > 0 ? 'error' : 'info';
-
-        if ($failureCount) {
-            $resultLine = sprintf(
-                "<dspec-bold-fail>✖</dspec-bold-fail> <dspec-fail>%d of %d examples failed</dspec-fail>", 
-                $failureCount,
-                $total
-            );
-
-        } else {
-            $resultLine = sprintf(
-                "<dspec-bold-pass>✔</dspec-bold-pass> <dspec-pass>%d example%s passed</dspec-pass>", 
-                $passCount,
-                $passCount != 1 ? 's' : ''
-            );
-        }
-
-        if (count($r->getPending())) {
-            $resultLine.= sprintf(
-                ", <dspec-pending>%d pending</dspec-pending>", 
-                count($r->getPending())
-            );
-        }
-
-        if (count($r->getSkipped())) {
-            $resultLine.= sprintf(
-                ", <dspec-skipped>%d skipped</dspec-skipped>", 
-                count($r->getSkipped())
-            );
-        }
-
-
-        $this->output->writeln(sprintf("%s <dspec-meta>(%ss)</dspec-meta>", $resultLine, round($duration, 5)));
-
-        $failureTree = (new FailureTree)->setOutput($this->output);
-        $failureTree->format($r, $suite, $verbose);
     }
 
     /**
