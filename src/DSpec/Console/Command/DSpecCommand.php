@@ -38,7 +38,8 @@ class DSpecCommand extends Command
             ->setName('dspec')
             ->setDescription('run dspec')
             ->addArgument('specs', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'Files/dirs to run')
-            ->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Path to a configuration file');
+            ->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Path to a configuration file')
+            ->addOption('profile', 'p', InputOption::VALUE_REQUIRED, 'Chosen configuration profile');
         ;
     }
 
@@ -61,7 +62,14 @@ class DSpecCommand extends Command
         );
 
         $profile = 'default';
-        $config = $app['config']->default;
+        $config = $app['config']->$profile;;
+        if ($input->getOption('profile') && $input->getOption('profile') !== 'default') {
+            $profile = $input->getOption('profile');
+            if (!property_exists($app['config'], $profile)) {
+                throw new \InvalidArgumentException("profile:$profile not found");
+            }
+            $config = (object) array_merge((array) $config, (array) $app['config']->$profile);
+        }
 
         // extensions
         foreach($config->extensions as $class => $options) {
