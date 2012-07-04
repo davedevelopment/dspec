@@ -4,6 +4,7 @@ namespace DSpec\Formatter;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * This file is part of dspec
@@ -14,7 +15,7 @@ use Symfony\Component\Console\Formatter\OutputFormatterStyle;
  * file that was distributed with this source code.
  */
 
-abstract class AbstractFormatter implements FormatterInterface
+abstract class AbstractFormatter implements FormatterInterface, EventSubscriberInterface
 {
     /**
      * @var OutputInterface

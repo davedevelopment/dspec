@@ -2,8 +2,9 @@
 
 namespace DSpec\Formatter;
 
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use DSpec\Reporter;
+use DSpec\ExampleGroup;
 
 /**
  * This file is part of dspec
@@ -14,7 +15,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  * file that was distributed with this source code.
  */
 
-interface FormatterInterface extends EventSubscriberInterface
+interface FormatterInterface 
 {
     public function setOutput(OutputInterface $output);
+    public function format(Reporter $r, ExampleGroup $suite, $verbose = false);
 }
