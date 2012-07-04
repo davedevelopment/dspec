@@ -50,6 +50,10 @@ class DSpecCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        if (version_compare(PHP_VERSION, '5.4.0', '<')) {
+            throw new \RunTimeException("dspec requires PHP >= 5.4.0");
+        }
+
         $app = $this->getContainer();
 
         $app['dispatcher'] = new EventDispatcher;
