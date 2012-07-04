@@ -39,7 +39,8 @@ class DSpecCommand extends Command
             ->setDescription('run dspec')
             ->addArgument('specs', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'Files/dirs to run')
             ->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Path to a configuration file')
-            ->addOption('profile', 'p', InputOption::VALUE_REQUIRED, 'Chosen configuration profile');
+            ->addOption('profile', 'p', InputOption::VALUE_REQUIRED, 'Chosen configuration profile')
+            ->addOption('bootstrap', 'b', InputOption::VALUE_REQUIRED, 'A php bootstrap file');
         ;
     }
 
@@ -69,6 +70,15 @@ class DSpecCommand extends Command
                 throw new \InvalidArgumentException("profile:$profile not found");
             }
             $config = (object) array_merge((array) $config, (array) $app['config']->$profile);
+        }
+
+        $bootstrap = $input->getOption('bootstrap') ?: isset($config->bootstrap) ? $config->bootstrap : null;
+
+        if ($bootstrap) { 
+            $inc = function() use ($bootstrap) {
+                require $bootstrap;
+            };
+            $inc();
         }
 
         // extensions
