@@ -1,6 +1,5 @@
 {
     "name": "davedevelopment/dspec",
-    "minimum-stability": "dev",
 
     "require-dev": {
         "behat/behat": "*",

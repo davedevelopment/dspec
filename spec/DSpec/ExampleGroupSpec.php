@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__.'/../../vendor/davedevelopment/hamcrest-php/hamcrest/Hamcrest.php';
-
 use Mockery as m;
 
 describe("ExampleGroup", function() {
@@ -42,10 +40,6 @@ describe("ExampleGroup", function() {
             $this->reporter->shouldIgnoreMissing();
         });
 
-        afterEach(function() {
-            $this->reporter->mockery_verify();
-        });
-
         it("runs any children ExampleGroups", function() {
             $child = m::mock("\DSpec\ExampleGroup")
                 ->shouldReceive("run")
@@ -54,7 +48,6 @@ describe("ExampleGroup", function() {
 
             $this->eg->add($child);
             $this->eg->run($this->reporter);
-            $child->mockery_verify();
         });
 
 

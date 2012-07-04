@@ -102,7 +102,14 @@ class DSpecCommand extends Command
         }
 
         // extensions
-        foreach($config->extensions as $class => $options) {
+        foreach($config->extensions as $name => $options) {
+            $class = "\\DSpec\\Provider\\" . ucfirst($name) . "ServiceProvider";
+            if (!class_exists($class)) {
+                $class = $name;
+                if (!class_exists($class)) {
+                    throw new \InvalidArgumentException("class:$class not found");
+                }
+            } 
             $app->register(new $class, (array) $options);
         }
 
