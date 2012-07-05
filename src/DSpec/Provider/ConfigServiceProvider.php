@@ -39,7 +39,7 @@ class ConfigServiceProvider implements ServiceProviderInterface
         /**
          * Default config object 
          */
-        $app['config.defaults'] = array();
+        $app['config.skeleton'] = array();
 
         /**
          * Default parser
@@ -50,7 +50,7 @@ class ConfigServiceProvider implements ServiceProviderInterface
 
         $app['config'] = $app->share(function () use ($app) {
 
-            $config = $app['config.defaults'];
+            $config = $app['config.skeleton'];
 
             if (!empty($app['config.path'])) {
                 if (!file_exists($app['config.path'])) {

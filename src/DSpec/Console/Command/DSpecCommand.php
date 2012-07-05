@@ -65,7 +65,7 @@ class DSpecCommand extends Command
             
         $app['config.path'] = $input->getOption('config');
         $app['config.default_paths'] = array('dspec.yml', 'dspec.yml.dist', 'dspec/dspec.yml', 'dspec/dspec.yml.dist');
-        $app['config.defaults'] = array(
+        $app['config.skeleton'] = array(
             'default' => array(
                 'verbose' => $input->getOption('verbose'),
                 'extensions' => array(),
@@ -75,7 +75,7 @@ class DSpecCommand extends Command
         );
 
         $profile = 'default';
-        $config = $app['config']->$profile;;
+        $config = $app['config']->$profile;
         if ($input->getOption('profile') && $input->getOption('profile') !== 'default') {
             $profile = $input->getOption('profile');
             if (!property_exists($app['config'], $profile)) {
@@ -95,6 +95,10 @@ class DSpecCommand extends Command
         if (empty($config->formatters)) {
             $config->formatters['progress'] = true;
         }
+
+        /**
+         * Should overwrite the profile with command line options here
+         */
 
         $bootstrap = $input->getOption('bootstrap') ?: isset($config->bootstrap) ? $config->bootstrap : null;
 
