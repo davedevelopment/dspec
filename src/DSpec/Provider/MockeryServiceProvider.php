@@ -28,6 +28,10 @@ class MockeryServiceProvider implements ServiceProviderInterface
 
     public function boot(DSpecApplication $app, Container $container) 
     {
+        if (!class_exists("Mockery")) {
+            throw new \RunTimeException("Could not find Mockery");
+        }
+
         $container['dispatcher']->addListener(Events::SUITE_START, function(SuiteStartEvent $e) {
             $e->getExampleGroup()->add(new Hook('afterEach', function() {
                 m::close();
