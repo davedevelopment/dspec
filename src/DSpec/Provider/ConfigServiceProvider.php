@@ -35,6 +35,7 @@ class ConfigServiceProvider implements ServiceProviderInterface
                 'extensions' => array(),
                 'formatters' => array(),
                 'paths' => array(),
+                'bootstrap' => false,
             ),
         );
 
@@ -72,39 +73,39 @@ class ConfigServiceProvider implements ServiceProviderInterface
 
         $container['profile'] = function () use ($container) {
 
-            $profile = 'default';
-            $config = $container['config']->$profile;
+            $config = $container['config'];
+            $profile = $config->default;
 
             if ($container['config.profile'] !== 'default') {
-                if (!property_exists($container['config'], $container['config.profile'])) {
-                    throw new \InvalidArgumentException("profile:$profile not found");
+                if (!property_exists($config, $container['config.profile'])) {
+                    throw new \InvalidArgumentException("profile:{$container['config.profile']} not found");
                 }
-                $config = (object) array_merge((array) $config, (array) $container['config']->{$container['profile']});
+                $profile = (object) array_merge((array) $profile, (array) $config->{$container['config.profile']});
             }
 
             // overrules
 
             if (isset($container['config.overrides']['bootstrap'])) {
-                $config->bootstrap = $container['config.overrides']['bootstrap'];
+                $profile->bootstrap = $container['config.overrides']['bootstrap'];
             }
 
             if (isset($container['config.overrides']['verbose'])) {
-                $config->verbose = $container['config.overrides']['verbose'];
+                $profile->verbose = $container['config.overrides']['verbose'];
             }
 
             /**
              * We can't set these in the defaults as we don't want them merging, 
              * only adding if nothing else present.
              */
-            if (empty($config->paths)) {
-                $config->paths[] = './spec';
+            if (empty($profile->paths)) {
+                $profile->paths[] = './spec';
             }
 
-            if (empty($config->formatters)) {
-                $config->formatters['progress'] = true;
+            if (empty($profile->formatters)) {
+                $profile->formatters['progress'] = true;
             }
 
-            return $config;
+            return $profile;
         };
 
     }
