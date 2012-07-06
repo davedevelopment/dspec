@@ -148,7 +148,7 @@ class DSpecCommand extends Command
 
         // context and run
         $context    = new SpecContext();
-        $suite      = new ExampleGroup("Suite", $context);
+        $suite      = new ExampleGroup($config->suite_name, $context);
         $reporter   = new Reporter($container['dispatcher']);
 
         ds::setContext($context);

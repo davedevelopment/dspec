@@ -1,5 +1,7 @@
 default:
 
+    suite_name: DSpec
+
     # Load hamcrest matchers
     bootstrap: 
 

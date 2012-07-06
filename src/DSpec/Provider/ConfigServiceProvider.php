@@ -36,6 +36,7 @@ class ConfigServiceProvider implements ServiceProviderInterface
                 'formatters' => array(),
                 'paths' => array(),
                 'bootstrap' => false,
+                'suite_title' => 'Suite',
             ),
         );
 
