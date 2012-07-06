@@ -172,9 +172,7 @@ how the `DSpec\Compiler` is tested in `spec/DSpec/CompilerSpec.php`
 Todo
 ----
 
-* Refactor the bootstrapping of the app. Cilex\Application is an unnecessary wrapper,
-  better to just have an instance of pimple.
-* DSpec\Console\Application should handle configuration and profile merging
+* Hamcrest service provider
 * Optional declaration of functions in global namespace
 * More tests
 * Logging would be nice for debugging
