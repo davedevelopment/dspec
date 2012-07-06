@@ -36,35 +36,40 @@ class FailureTree extends AbstractFormatter implements FormatterInterface
              * I'm a bad man
              */
             $outputter = function($eg, $output, $callback, $indent) use ($verbosity) {
-                if ($eg->hasFailures()) {
-                    $output->writeln(str_repeat(" ", $indent) . $eg->getTitle());
-                    foreach ($eg->getChildren() as $child) {
-                        if ($child instanceof \DSpec\ExampleGroup) {
-                            $callback($child, $output, $callback, $indent + 2);
-                        } else {
-                            if ($child->isFailure()) {
-                                $output->writeln(sprintf(
-                                    "%s<dspec-bold-fail>✖</dspec-bold-fail> <dspec-fail>%s</dspec-fail>",
-                                    str_repeat(" ", $indent + 2),
-                                    $child->getTitle()
-                                ));
+                if (!$eg->hasFailures()) {
+                    return;
+                }
 
-                                $e = $child->getFailureException();
-
-                                if ($verbosity) {
-                                    $failureMessage = (string) $e;
-                                } else {
-                                    $failureMessage = $e->getMessage();
-                                }
-
-                                $lines = explode("\n", $failureMessage);
-                                foreach ($lines as $n => $line) {
-                                    $lines[$n] = str_repeat(" ", $indent + 4) . $line;
-                                }
-                                $output->writeln(implode("\n", $lines));
-                            }
-                        }
+                $output->writeln(str_repeat(" ", $indent) . $eg->getTitle());
+                foreach ($eg->getChildren() as $child) {
+                    if ($child instanceof \DSpec\ExampleGroup) {
+                        $callback($child, $output, $callback, $indent + 2);
+                        continue;
                     }
+
+                    if (!$child->isFailure()) {
+                        continue;
+                    }
+
+                    $output->writeln(sprintf(
+                        "%s<dspec-bold-fail>✖</dspec-bold-fail> <dspec-fail>%s</dspec-fail>",
+                        str_repeat(" ", $indent + 2),
+                        $child->getTitle()
+                    ));
+
+                    $e = $child->getFailureException();
+
+                    if ($verbosity) {
+                        $failureMessage = (string) $e;
+                    } else {
+                        $failureMessage = $e->getMessage();
+                    }
+
+                    $lines = explode("\n", $failureMessage);
+                    foreach ($lines as $n => $line) {
+                        $lines[$n] = str_repeat(" ", $indent + 4) . $line;
+                    }
+                    $output->writeln(implode("\n", $lines));
                 }
             };
 
