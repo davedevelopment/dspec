@@ -27,53 +27,44 @@ class FailureTree extends AbstractFormatter implements FormatterInterface
 {
     public function format(Reporter $r, ExampleGroup $suite, $verbosity = false)
     {
-        if ($suite->hasFailures()) {
-            $this->output->writeln("");
-            $this->output->writeln("<dspec-fail>Failures</dspec-fail>:");
-            $this->output->writeln("");
+        if (!$suite->hasFailures()) {
+            return;
+        }
+        $this->output->writeln("");
+        $this->output->writeln("<dspec-fail>Failures</dspec-fail>:");
+        $this->output->writeln("");
 
-            /**
-             * I'm a bad man
-             */
-            $outputter = function($eg, $output, $callback, $indent) use ($verbosity) {
-                if (!$eg->hasFailures()) {
-                    return;
-                }
+        static::traverse($suite, $this->output, 0, $verbosity);
+    }
 
-                $output->writeln(str_repeat(" ", $indent) . $eg->getTitle());
-                foreach ($eg->getChildren() as $child) {
-                    if ($child instanceof \DSpec\ExampleGroup) {
-                        $callback($child, $output, $callback, $indent + 2);
-                        continue;
-                    }
+    public static function traverse($eg, $output, $indent, $verbosity) {
+        if (!$eg->hasFailures()) {
+            return;
+        }
 
-                    if (!$child->isFailure()) {
-                        continue;
-                    }
+        $output->writeln(str_repeat(" ", $indent) . $eg->getTitle());
+        foreach ($eg->getChildren() as $child) {
+            if ($child instanceof \DSpec\ExampleGroup) {
+                static::traverse($child, $output, $indent + 2, $verbosity);
+                continue;
+            }
 
-                    $output->writeln(sprintf(
-                        "%s<dspec-bold-fail>✖</dspec-bold-fail> <dspec-fail>%s</dspec-fail>",
-                        str_repeat(" ", $indent + 2),
-                        $child->getTitle()
-                    ));
+            if (!$child->isFailure()) {
+                continue;
+            }
 
-                    $e = $child->getFailureException();
+            $output->writeln(sprintf(
+                "%s<dspec-bold-fail>✖</dspec-bold-fail> <dspec-fail>%s</dspec-fail>",
+                str_repeat(" ", $indent + 2),
+                $child->getTitle()
+            ));
 
-                    if ($verbosity) {
-                        $failureMessage = (string) $e;
-                    } else {
-                        $failureMessage = $e->getMessage();
-                    }
+            $e = $child->getFailureException();
+            $msg = $verbosity ? (string) $e : $e->getMessage();
 
-                    $lines = explode("\n", $failureMessage);
-                    foreach ($lines as $n => $line) {
-                        $lines[$n] = str_repeat(" ", $indent + 4) . $line;
-                    }
-                    $output->writeln(implode("\n", $lines));
-                }
-            };
-
-            $outputter($suite, $this->output, $outputter, 0);
+            foreach (explode("\n", $msg) as $line) {
+                $output->writeln(str_repeat(" ", $indent + 4) . $line);
+            }
         }
     }
 }
