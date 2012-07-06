@@ -9,36 +9,38 @@ if (is_file(__DIR__ . '/../../../autoload.php')) {
 
 use DSpec\DSpec as ds;
 
-function describe($description, \Closure $closure) {
-    ds::describe($description, $closure);
-}
+if (!getenv('DSPEC_NO_GLOBALS')) {
+    function describe($description, \Closure $closure) {
+        ds::describe($description, $closure);
+    }
 
-function it($example, \Closure $closure = null) {
-    ds::it($example, $closure);
-}
+    function it($example, \Closure $closure = null) {
+        ds::it($example, $closure);
+    }
 
-function context($context, \Closure $closure) {
-    ds::context($context, $closure);
-}
+    function context($context, \Closure $closure) {
+        ds::context($context, $closure);
+    }
 
-function beforeEach(\Closure $closure) {
-    ds::beforeEach($closure);
-}
+    function beforeEach(\Closure $closure) {
+        ds::beforeEach($closure);
+    }
 
-function afterEach(\Closure $closure) {
-    ds::afterEach($closure);
-}
+    function afterEach(\Closure $closure) {
+        ds::afterEach($closure);
+    }
 
-function pending($msg = "{no message}") {
-    ds::pending($msg);
-}
+    function pending($msg = "{no message}") {
+        ds::pending($msg);
+    }
 
-function skip($msg = "{no message}") {
-    ds::skip($msg);
-}
+    function skip($msg = "{no message}") {
+        ds::skip($msg);
+    }
 
-function fail($msg = "{no message}") {
-    ds::fail($msg);
+    function fail($msg = "{no message}") {
+        ds::fail($msg);
+    }
 }
 
 $app = new DSpec\Console\DSpecApplication(new DSpec\Container());

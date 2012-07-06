@@ -173,7 +173,6 @@ Todo
 ----
 
 * Hamcrest service provider
-* Optional declaration of functions in global namespace
 * More tests
 * Logging would be nice for debugging
 * Documentation
