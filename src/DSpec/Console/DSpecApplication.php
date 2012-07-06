@@ -86,15 +86,16 @@ class DSpecApplication extends Application
         /**
          * Should overwrite the profile with command line options here
          */
-        if ($container['profile']->bootstrap) { 
-            $inc = function() use ($container) {
-                require $container['profile']->bootstrap;
+        $profile = $container['profile'];
+        if ($profile->bootstrap) { 
+            $inc = function() use ($profile) {
+                require $profile->bootstrap;
             };
             $inc();
         }
 
         // extensions
-        foreach($container['profile']->extensions as $name => $options) {
+        foreach($profile->extensions as $name => $options) {
             $class = "\\DSpec\\Provider\\" . ucfirst($name) . "ServiceProvider";
             if (!class_exists($class)) {
                 $class = $name;
