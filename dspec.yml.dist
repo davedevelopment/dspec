@@ -4,12 +4,6 @@ default:
     bootstrap: vendor/davedevelopment/hamcrest-php/hamcrest/Hamcrest.php
 
     extensions:
-        # Load an extension by class name, along with (C|S)ilex style options
-        Cilex\Provider\MonologServiceProvider:
-            monolog.logfile: dspec.log
-            monolog.level: 100
-            monolog.name: dspec
-
         # Load a DSpec extension with short name
         mockery: ~ 
 

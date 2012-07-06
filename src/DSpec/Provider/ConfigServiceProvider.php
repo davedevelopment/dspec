@@ -2,8 +2,9 @@
 
 namespace DSpec\Provider;
 
-use Cilex\Application;
-use Cilex\ServiceProviderInterface;
+use DSpec\Container;
+use DSpec\Console\DSpecApplication;
+use DSpec\ServiceProviderInterface;
 use Symfony\Component\Yaml;
 use ArrayObject;
 
@@ -15,68 +16,111 @@ use ArrayObject;
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-
 class ConfigServiceProvider implements ServiceProviderInterface
 {
-    public function register(Application $app)
+    public function register(Container $container)
     {
         /**
          * The main config file
          */
-        $app['config.path'] = null;
+        $container['config.path'] = null;
 
-        /**
-         * If `config.path` is not set, these paths will be searched, first one 
-         * found gets loaded
-         */
-        $app['config.default_paths'] = array();
+        $container['config.profile'] = 'default';
 
-        /**
-         * These paths will be merged in to the config, if they are found
-         */
-        $app['config.merge_paths'] = array();
+        $container['config.default_paths'] = array('dspec.yml', 'dspec.yml.dist', 'dspec/dspec.yml', 'dspec/dspec.yml.dist');
 
-        /**
-         * Default config object 
-         */
-        $app['config.skeleton'] = array();
+        $container['config.skeleton'] = array(
+            'default' => array(
+                'verbose' => false,
+                'extensions' => array(),
+                'formatters' => array(),
+                'paths' => array(),
+            ),
+        );
+
+        $container['config.overrides'] = array();
 
         /**
          * Default parser
          */
-        $app['config.parser'] = $app->share(function() {
+        $container['config.parser'] = $container->share(function() {
             return new Yaml\Parser;
         });
 
-        $app['config'] = $app->share(function () use ($app) {
+        $container['config'] = function () use ($container) {
 
-            $config = $app['config.skeleton'];
+            $config = $container['config.skeleton'];
 
-            if (!empty($app['config.path'])) {
-                if (!file_exists($app['config.path'])) {
-                    throw new \InvalidArgumentException("Could not find " . $app['config.path']);
+            if (!empty($container['config.path'])) {
+                if (!file_exists($container['config.path'])) {
+                    throw new \InvalidArgumentException("Could not find " . $container['config.path']);
                 }
 
-                $result = $app['config.parser']->parse(file_get_contents($app['config.path']));
+                $result = $container['config.parser']->parse(file_get_contents($container['config.path']));
                 $config = static::configMerge($config, $result);
             } else {
-                foreach ($app['config.default_paths'] as $path) {
+                foreach ($container['config.default_paths'] as $path) {
                     if (file_exists($path)) {
-                    $result = $app['config.parser']->parse(file_get_contents($path));
+                    $result = $container['config.parser']->parse(file_get_contents($path));
                         $config = static::configMerge($config, $result);
                     }
                 }
             }
 
-            foreach($app['config.merge_paths'] as $path) {
-                if (file_exists($path)) {
-                    $result = $app['config.parser']->parse(file_get_contents($path));
-                    $config = static::configMerge($config, $result);
+            return json_decode(json_encode($config));
+        };
+
+        $container['profile'] = function () use ($container) {
+
+            $profile = 'default';
+            $config = $container['config']->$profile;
+
+            if ($container['config.profile'] !== 'default') {
+                if (!property_exists($container['config'], $container['config.profile'])) {
+                    throw new \InvalidArgumentException("profile:$profile not found");
                 }
+                $config = (object) array_merge((array) $config, (array) $container['config']->{$container['profile']});
             }
 
-            return json_decode(json_encode($config));
-        });
+            // overrules
+
+            if (isset($container['config.overrides']['bootstrap'])) {
+                $config->bootstrap = $container['config.overrides']['bootstrap'];
+            }
+
+            if (isset($container['config.overrides']['verbose'])) {
+                $config->verbose = $container['config.overrides']['verbose'];
+            }
+
+            /**
+             * We can't set these in the defaults as we don't want them merging, 
+             * only adding if nothing else present.
+             */
+            if (empty($config->paths)) {
+                $config->paths[] = './spec';
+            }
+
+            if (empty($config->formatters)) {
+                $config->formatters['progress'] = true;
+            }
+
+            return $config;
+        };
+
+    }
+
+    public function boot(DSpecApplication $app, Container $container)
+    {
+        /**
+         * Lock these down now others have had chance to extend
+         */
+        $container['config'] = $container->share($container->extend('config', function($config) {
+            return $config;
+        }));
+
+        $container['profile'] = $container->share($container->extend('profile', function($profile) {
+            return $profile;
+        }));
     }
 
     /**

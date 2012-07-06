@@ -2,11 +2,17 @@
 
 namespace DSpec\Console;
 
+use DSpec\Container;
+use DSpec\ServiceProviderInterface;
+use DSpec\Provider\ConfigServiceProvider;
+use DSpec\Console\Command\DSpecCommand;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Command\HelpCommand;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * This file is part of dspec
@@ -19,14 +25,118 @@ use Symfony\Component\Console\Command\HelpCommand;
 
 class DSpecApplication extends Application
 {
+    protected $container;
+    protected $registeredProviders = array();
     protected $name = 'dspec';
 
     /**
      * @param string $version
      */
-    public function __construct($version = 'dev')
+    public function __construct(Container $container, $version = 'dev')
     {
+        $this->container = $container;
         parent::__construct('dspec', $version);
+    }
+
+    public function getContainer()
+    {
+        return $this->container;
+    }
+
+    public function doRun(InputInterface $input, OutputInterface $output)
+    {
+        // introspect input without definition
+        $config = $input->getParameterOption(array('--config', '-c'));
+        $verbose = $input->getParameterOption(array('--verbose', '-v'));
+        $bootstrap = $input->getParameterOption(array('--bootstrap', '-b'));
+        $profile = $input->getParameterOption(array('--profile', '-p'));
+
+        if (true == $verbose) {
+            $output->setVerbosity(OutputInterface::VERBOSITY_VERBOSE);
+        }
+
+        $container = $this->getContainer();
+
+        // event dispatcher 
+        $container['dispatcher'] = new EventDispatcher;
+        $container['input']  = $input;
+        $container['output'] = $output;
+
+        // config
+
+        /**
+         * Process options
+         */
+        $this->register(new ConfigServiceProvider(), array(
+            'config.path' => $config,
+        ));
+
+        if ($profile) {
+            $container['config.profile'] = $profile;
+        }
+        $overrides = array();
+        if ($input->hasParameterOption(array('--verbose', '-v'))) {
+            $overrides['verbose'] = true;
+        }
+        if ($bootstrap) {
+            $overrides['bootstrap'] = $bootstrap;
+        }
+        $container['config.overrides'] = $overrides;
+
+        /**
+         * Should overwrite the profile with command line options here
+         */
+        if ($container['profile']->bootstrap) { 
+            $inc = function() use ($container) {
+                require $container['profile']->bootstrap;
+            };
+            $inc();
+        }
+
+        // extensions
+        foreach($container['profile']->extensions as $name => $options) {
+            $class = "\\DSpec\\Provider\\" . ucfirst($name) . "ServiceProvider";
+            if (!class_exists($class)) {
+                $class = $name;
+                if (!class_exists($class)) {
+                    throw new \InvalidArgumentException("class:$class not found");
+                }
+            } 
+            $this->register(new $class, (array) $options);
+        }
+
+        $container['dspec.command'] = new DSpecCommand($container);
+
+        $this->bootProviders();
+
+        $this->add($container['dspec.command']);
+
+        return parent::doRun($input, $output);
+    }
+
+    public function register($provider, array $values = array())
+    {
+        if (!($provider instanceof ServiceProviderInterface)) {
+            throw new \InvalidArgumentException(
+                get_class($provider) . ' should implement DSpec\\ServiceProviderInterface'
+            );
+        }
+
+        $provider->register($this->getContainer());
+
+        foreach ($values as $key => $value) {
+            $this->getContainer()[$key] = $value;
+        }
+
+        $this->registeredProviders[] = $provider;
+    }
+
+    public function bootProviders()
+    {
+        foreach ($this->registeredProviders as $provider)
+        {
+            $provider->boot($this, $this->getContainer());
+        }
     }
 
     /**
@@ -44,6 +154,9 @@ class DSpecApplication extends Application
             new InputOption('--ansi', '', InputOption::VALUE_NONE, 'Force ANSI output.'),
             new InputOption('--no-ansi', '', InputOption::VALUE_NONE, 'Disable ANSI output.'),
             new InputOption('--no-interaction', '-n', InputOption::VALUE_NONE, 'Do not ask any interactive question.'),
+            new InputOption('--config', '-c', InputOption::VALUE_REQUIRED, 'Path to a configuration file'),
+            new InputOption('--profile', '-p', InputOption::VALUE_REQUIRED, 'Chosen configuration profile'),
+            new InputOption('--bootstrap', '-b', InputOption::VALUE_REQUIRED, 'A php bootstrap file'),
         ));
     }
 

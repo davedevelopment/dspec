@@ -2,8 +2,9 @@
 
 namespace DSpec\Provider;
 
-use Cilex\Application;
-use Cilex\ServiceProviderInterface;
+use DSpec\Console\DSpecApplication;
+use DSpec\Container;
+use DSpec\ServiceProviderInterface;
 
 use DSpec\Hook;
 use DSpec\Events;
@@ -21,9 +22,13 @@ use Mockery as m;
 
 class MockeryServiceProvider implements ServiceProviderInterface
 {
-    public function register(Application $app)
+    public function register(Container $container)
     {
-        $app['dispatcher']->addListener(Events::SUITE_START, function(SuiteStartEvent $e) {
+    }
+
+    public function boot(DSpecApplication $app, Container $container) 
+    {
+        $container['dispatcher']->addListener(Events::SUITE_START, function(SuiteStartEvent $e) {
             $e->getExampleGroup()->add(new Hook('afterEach', function() {
                 m::close();
             }));

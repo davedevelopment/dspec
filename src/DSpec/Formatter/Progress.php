@@ -13,6 +13,7 @@ use DSpec\Event\ExampleSkipEvent;
 use DSpec\Events;
 use DSpec\Reporter;
 use DSpec\ExampleGroup;
+use DSpec\Formatter\FormatterInterface;
 
 /**
  * This file is part of dspec

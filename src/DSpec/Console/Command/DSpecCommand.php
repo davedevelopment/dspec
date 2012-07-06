@@ -3,6 +3,7 @@
 namespace DSpec\Console\Command;
 
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -13,6 +14,7 @@ use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\Finder\Finder;
 use DSpec\Context\SpecContext;
 use DSpec\Reporter;
+use DSpec\Container;
 use DSpec\ExampleGroup;
 use DSpec\DSpec as ds;
 use DSpec\Events;
@@ -20,8 +22,6 @@ use DSpec\Event\SuiteStartEvent;
 use DSpec\Event\SuiteEndEvent;
 use DSpec\Formatter\Progress;
 use DSpec\Provider\ConfigServiceProvider;
-use Cilex\Command\Command;
-use Cilex\Provider\MonologServiceProvider;
 
 /**
  * This file is part of dspec
@@ -34,17 +34,21 @@ use Cilex\Provider\MonologServiceProvider;
 
 class DSpecCommand extends Command
 {
+    protected $container;
+
+    public function __construct(Container $container)
+    {
+        $this->container = $container;
+        parent::__construct();
+    }
+
     protected function configure()
     {
         $this
             ->setName('dspec')
             ->setDescription('run dspec')
             ->addArgument('specs', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'Files/dirs to run')
-            ->addOption('config', 'c', InputOption::VALUE_REQUIRED, 'Path to a configuration file')
-            ->addOption('profile', 'p', InputOption::VALUE_REQUIRED, 'Chosen configuration profile')
-            ->addOption('bootstrap', 'b', InputOption::VALUE_REQUIRED, 'A php bootstrap file')
             ->addOption('formatter', 'f', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Formatter to use');
-
         ;
     }
 
@@ -54,72 +58,9 @@ class DSpecCommand extends Command
             throw new \RunTimeException("dspec requires PHP >= 5.4.0");
         }
 
-        $app = $this->getContainer();
+        $container = $this->container;
 
-        $app['dispatcher'] = new EventDispatcher;
-
-        /**
-         * Process options
-         */
-        $app->register(new ConfigServiceProvider());
-            
-        $app['config.path'] = $input->getOption('config');
-        $app['config.default_paths'] = array('dspec.yml', 'dspec.yml.dist', 'dspec/dspec.yml', 'dspec/dspec.yml.dist');
-        $app['config.skeleton'] = array(
-            'default' => array(
-                'verbose' => $input->getOption('verbose'),
-                'extensions' => array(),
-                'formatters' => array(),
-                'paths' => array(),
-            ),
-        );
-
-        $profile = 'default';
-        $config = $app['config']->$profile;
-        if ($input->getOption('profile') && $input->getOption('profile') !== 'default') {
-            $profile = $input->getOption('profile');
-            if (!property_exists($app['config'], $profile)) {
-                throw new \InvalidArgumentException("profile:$profile not found");
-            }
-            $config = (object) array_merge((array) $config, (array) $app['config']->$profile);
-        }
-
-        /**
-         * We can't set these in the defaults as we don't want them merging, 
-         * only adding if nothing else present.
-         */
-        if (empty($config->paths)) {
-            $config->paths[] = './spec';
-        }
-
-        if (empty($config->formatters)) {
-            $config->formatters['progress'] = true;
-        }
-
-        /**
-         * Should overwrite the profile with command line options here
-         */
-
-        $bootstrap = $input->getOption('bootstrap') ?: isset($config->bootstrap) ? $config->bootstrap : null;
-
-        if ($bootstrap) { 
-            $inc = function() use ($bootstrap) {
-                require $bootstrap;
-            };
-            $inc();
-        }
-
-        // extensions
-        foreach($config->extensions as $name => $options) {
-            $class = "\\DSpec\\Provider\\" . ucfirst($name) . "ServiceProvider";
-            if (!class_exists($class)) {
-                $class = $name;
-                if (!class_exists($class)) {
-                    throw new \InvalidArgumentException("class:$class not found");
-                }
-            } 
-            $app->register(new $class, (array) $options);
-        }
+        $config = $container['profile'];
 
         // paths
 
@@ -169,33 +110,46 @@ class DSpecCommand extends Command
                 $class = $f;
             } else if (class_exists('\\DSpec\\Formatter\\' . ucfirst($f))) {
                 $class = '\\DSpec\\Formatter\\' . ucfirst($f);
+            }
+
+            if (false !== $class) {
+                $out = $output;
+                if (isset($options->out)) {
+                    $fh = fopen($options->out, 'a', false);
+                    if (!$fh) {
+                        throw new \InvalidArgumentException("Could not open {$options['out']}");
+                    }
+                    $out = new StreamOutput($fh);
+                }
+
+                $options = (array) $options;
+                $formatter = (new $class($options))->setOutput($out);
             } else {
+                if (isset($container[$f])) {
+                    $formatter = $container[$f];
+                }
                 throw new \InvalidArgumentException("formatter:$f not found");
             }
 
-            $out = $output;
-            if (isset($options->out)) {
-                $fh = fopen($options->out, 'a', false);
-                if (!$fh) {
-                    throw new \InvalidArgumentException("Could not open {$options['out']}");
-                }
-                $out = new StreamOutput($fh);
+            if (!($formatter instanceof \DSpec\Formatter\FormatterInterface)) {
+                throw new \InvalidArgumentException(
+                    get_class($formatter) . " needs to implement DSpec\Formatter\FormatterInterface"
+                );
             }
 
-            $options = (array) $options;
-            $formatters[] = (new $class($options))->setOutput($out);
+            $formatters[] = $formatter;
         }
 
         foreach ($formatters as $formatter) {
             if ($formatter instanceof EventSubscriberInterface) {
-                $app['dispatcher']->addSubscriber($formatter);
+                $container['dispatcher']->addSubscriber($formatter);
             }
         }
 
         // context and run
         $context    = new SpecContext();
         $suite      = new ExampleGroup("Suite", $context);
-        $reporter   = new Reporter($app['dispatcher']);
+        $reporter   = new Reporter($container['dispatcher']);
 
         ds::setContext($context);
 
@@ -203,13 +157,13 @@ class DSpecCommand extends Command
          * The reporter could dispatch these events, assuming the example group 
          * alerts it to example group start/finish
          */    
-        $app['dispatcher']->dispatch(Events::COMPILER_START, new Event());
+        $container['dispatcher']->dispatch(Events::COMPILER_START, new Event());
         $context->load($files, $suite);
-        $app['dispatcher']->dispatch(Events::COMPILER_END, new Event());
+        $container['dispatcher']->dispatch(Events::COMPILER_END, new Event());
 
-        $app['dispatcher']->dispatch(Events::SUITE_START, new SuiteStartEvent($suite));
+        $container['dispatcher']->dispatch(Events::SUITE_START, new SuiteStartEvent($suite));
         $suite->run($reporter);
-        $app['dispatcher']->dispatch(Events::SUITE_END, new SuiteEndEvent($suite, $reporter));
+        $container['dispatcher']->dispatch(Events::SUITE_END, new SuiteEndEvent($suite, $reporter));
 
         foreach($formatters as $f) {
             $f->format($reporter, $suite, $config->verbose);
@@ -217,4 +171,5 @@ class DSpecCommand extends Command
 
         return count($reporter->getFailures()) ? 1 : 0;
     }
+
 }
