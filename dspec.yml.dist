@@ -1,11 +1,13 @@
 default:
 
     # Load hamcrest matchers
-    bootstrap: vendor/davedevelopment/hamcrest-php/hamcrest/Hamcrest.php
+    bootstrap: 
 
     extensions:
         # Load a DSpec extension with short name
         mockery: ~ 
+        hamcrest: 
+            hamcrest.globals: true
 
     # The default specs to run, files or dirs relative to the cwd
     paths: [ 'spec' ]
