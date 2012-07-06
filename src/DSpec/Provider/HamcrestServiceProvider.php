@@ -39,9 +39,9 @@ class HamcrestServiceProvider implements ServiceProviderInterface
             }
         }
 
-        if (file_exists(__DIR__.'/../../../../davedevelopment/hamcrest-php/hamcrest/Hamcrest.php')) {
+        if (file_exists(__DIR__.'/../../../../hamcrest-php/hamcrest/Hamcrest.php')) {
             // composer install
-            require_once __DIR__.'/../../../../davedevelopment/hamcrest-php/hamcrest/Hamcrest.php';
+            require_once __DIR__.'/../../../../hamcrest-php/hamcrest/Hamcrest.php';
         } else if (file_exists(__DIR__.'/../../../vendor/davedevelopment/hamcrest-php/hamcrest/Hamcrest.php')) {
             // dspec dev
             require_once __DIR__.'/../../../vendor/davedevelopment/hamcrest-php/hamcrest/Hamcrest.php';
