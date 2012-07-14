@@ -31,11 +31,6 @@ class Progress extends AbstractFormatter implements FormatterInterface
      */
     protected $counter = 0;
 
-    /**
-     * @var float
-     */
-    protected $startTime = 0;
-
     static public function getSubscribedEvents()
     {
         return array_merge(parent::getSubscribedEvents(), array(
@@ -43,7 +38,6 @@ class Progress extends AbstractFormatter implements FormatterInterface
             Events::EXAMPLE_PASS => array('onExamplePass', 0),
             Events::EXAMPLE_PEND => array('onExamplePend', 0),
             Events::EXAMPLE_SKIP => array('onExampleSkip', 0),
-            Events::COMPILER_START => array('onCompilerStart', 0),
         ));
     }
 
@@ -51,15 +45,10 @@ class Progress extends AbstractFormatter implements FormatterInterface
     {
         $this->output->writeln("");
         $this->output->writeln("");
-        $summary = (new Summary(['startTime' => $this->startTime]))->setOutput($this->output);
+        $summary = (new Summary())->setOutput($this->output);
         $summary->format($r, $suite, $verbose);
         $failureTree = (new FailureTree)->setOutput($this->output);
         $failureTree->format($r, $suite, $verbose);
-    }
-
-    public function onCompilerStart(Event $e)
-    {
-        $this->startTime = microtime(true);
     }
 
     /**

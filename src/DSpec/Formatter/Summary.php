@@ -25,36 +25,19 @@ use DSpec\ExampleGroup;
 
 class Summary extends AbstractFormatter implements FormatterInterface
 {
-    /**
-     * @var float
-     */
-    protected $startTime = 0;
-
     public function __construct(array $options = array())
     {
-        /**
-         * Force the start time, in the event events aren't used
-         */
-        if (isset($options['startTime'])) {
-            $this->startTime = $options['startTime'];
-        }
     }
 
     static public function getSubscribedEvents()
     {
         return array(
-            Events::COMPILER_START => array('onCompilerStart', 0),
         );
-    }
-
-    public function onCompilerStart(Event $e)
-    {
-        $this->startTime = microtime(true);
     }
 
     public function format(Reporter $r, ExampleGroup $suite, $verbose = false)
     {
-        $duration = microtime(true) - $this->startTime;
+        $duration = $suite->getTime();
 
         $total        = $suite->total();
         $failures     = $r->getFailures();

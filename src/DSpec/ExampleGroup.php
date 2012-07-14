@@ -15,9 +15,10 @@ use DSpec\Context\AbstractContext;
 
 class ExampleGroup extends Node 
 {
+    use Timeable;
+
     protected $parent;
     protected $context;
-
     protected $examples = array();
     protected $hooks = array(
         'beforeEach' => array(),
@@ -36,6 +37,7 @@ class ExampleGroup extends Node
      */
     public function run(Reporter $reporter)
     {
+        $this->startTimer();
         $this->setErrorHandler();
         foreach ($this->examples as $example) {
 
@@ -43,6 +45,8 @@ class ExampleGroup extends Node
                 $example->run($reporter);
                 continue;
             }
+
+            $example->startTimer();
 
             try {
                 $context = clone $this->context;
@@ -62,8 +66,11 @@ class ExampleGroup extends Node
                 $example->failed($e);
                 $reporter->exampleFailed($example);
             }
+
+            $example->endTimer();
         }
         $this->restoreErrorHandler();
+        $this->endTimer();
     }
 
     /**

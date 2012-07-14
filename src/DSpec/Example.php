@@ -15,15 +15,15 @@ use DSpec\Context\AbstractContext;
 
 class Example extends Node
 {
+    use Timeable;
+
     const RESULT_PASSED = 'passed';
     const RESULT_FAILED = 'failed';
     const RESULT_PENDING = 'pending';
     const RESULT_SKIPPED = 'skipped';
 
     protected $closure;
-
     protected $result;
-
     protected $failureException;
     protected $pendingMessage;
     protected $skippedMessage;
