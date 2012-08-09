@@ -111,4 +111,9 @@ class Example extends Node
     {
         return $this->closure;
     }
+
+    public function getResult()
+    {
+        return $this->result;
+    }
 }

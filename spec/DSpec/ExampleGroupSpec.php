@@ -9,7 +9,7 @@ describe("ExampleGroup", function() {
         $this->eg = new DSpec\ExampleGroup("test", $this->context);
     });
 
-    describe("total()", function() {
+    describe("#total()", function() {
         it("returns the total number of examples in this group and it's descendants", function() {
             $closure = function() {};
             $innerEg = new DSpec\ExampleGroup("Inner", $this->context, $this->eg);
@@ -21,7 +21,7 @@ describe("ExampleGroup", function() {
         });
     });
 
-    describe("getDescendants()", function() {
+    describe("#getDescendants()", function() {
         it("returns the descendants and itself", function() {
             $closure = function() {};
             $innerEg = new DSpec\ExampleGroup("Inner", $this->context, $this->eg);
@@ -33,14 +33,14 @@ describe("ExampleGroup", function() {
         });
     });
 
-    describe("run()", function() {
+    describe("#run()", function() {
 
         beforeEach(function() {
             $this->reporter = m::mock("DSpec\Reporter");
             $this->reporter->shouldIgnoreMissing();
         });
 
-        it("runs any children ExampleGroups", function() {
+        it("runs children ExampleGroups", function() {
             $child = m::mock("\DSpec\ExampleGroup")
                 ->shouldReceive("run")
                 ->once()
@@ -50,6 +50,14 @@ describe("ExampleGroup", function() {
             $this->eg->run($this->reporter);
         });
 
+        it("run examples", function() {
+            $obj = (object) ['count' => 0];
+            $closure = function() use ($obj) { $obj++; };
+            $this->eg->add(new DSpec\Example("one", $closure));
+            $this->eg->add(new DSpec\Example("two", $closure));
+            $this->eg->run($this->reporter);
+            assertThat($obj->count, 2);
+        });
 
         context("when hooks are present", function() {
 
@@ -60,7 +68,7 @@ describe("ExampleGroup", function() {
                 };
             });
 
-            it("runs hooks in the order added", function() {
+            it("runs them in the order added", function() {
                 $this->eg->add(new DSpec\Hook("beforeEach", $this->factory->__invoke("A")));
                 $this->eg->add(new DSpec\Example("one", $this->factory->__invoke("B")));
                 $this->eg->add(new DSpec\Hook("afterEach", $this->factory->__invoke("C")));
@@ -83,16 +91,7 @@ describe("ExampleGroup", function() {
 
         });
 
-        it("run any examples", function() {
-            $obj = (object) ['count' => 0];
-            $closure = function() use ($obj) { $obj++; };
-            $this->eg->add(new DSpec\Example("one", $closure));
-            $this->eg->add(new DSpec\Example("two", $closure));
-            $this->eg->run($this->reporter);
-            assertThat($obj->count, 2);
-        });
-
-        describe("results", function() {
+        describe("dealing with results", function() {
             it("captures and reports skipped examples", function() {
                 $this->eg->add($ex = new DSpec\Example("skip", function() { throw new DSpec\Exception\SkippedExampleException(); }));
                 $this->reporter->shouldReceive("exampleSkipped")->with($ex)->once();
@@ -133,7 +132,7 @@ describe("ExampleGroup", function() {
     });
 
 
-    describe("hasFailures()", function() {
+    describe("#hasFailures()", function() {
 
         it("returns true if any examples failed", function() {
             $example = new DSpec\Example("test", function() {});

@@ -38,13 +38,15 @@ class FailureTree extends AbstractFormatter implements FormatterInterface
     }
 
     public static function traverse($eg, $output, $indent, $verbosity) {
-        if (!$eg->hasFailures()) {
-            return;
-        }
 
-        $output->writeln(str_repeat(" ", $indent) . $eg->getTitle());
         foreach ($eg->getChildren() as $child) {
             if ($child instanceof \DSpec\ExampleGroup) {
+
+                if (!$child->hasFailures()) {
+                    continue;;
+                }
+
+                $output->writeln(str_repeat(" ", $indent) . $child->getTitle());
                 static::traverse($child, $output, $indent + 2, $verbosity);
                 continue;
             }
@@ -55,7 +57,7 @@ class FailureTree extends AbstractFormatter implements FormatterInterface
 
             $output->writeln(sprintf(
                 "%s<dspec-bold-fail>✖</dspec-bold-fail> <dspec-fail>%s</dspec-fail>",
-                str_repeat(" ", $indent + 2),
+                str_repeat(" ", $indent ),
                 $child->getTitle()
             ));
 
@@ -63,7 +65,7 @@ class FailureTree extends AbstractFormatter implements FormatterInterface
             $msg = $verbosity ? (string) $e : $e->getMessage();
 
             foreach (explode("\n", $msg) as $line) {
-                $output->writeln(str_repeat(" ", $indent + 4) . $line);
+                $output->writeln(str_repeat(" ", $indent + 2) . $line);
             }
         }
     }
