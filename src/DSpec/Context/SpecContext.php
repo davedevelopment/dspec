@@ -24,7 +24,6 @@ class SpecContext extends AbstractContext
     protected $__stack;
 
     /**
-     * @param ExampleGroup $eg
      */
     public function __construct()
     {
