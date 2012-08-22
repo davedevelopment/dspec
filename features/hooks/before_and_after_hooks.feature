@@ -46,15 +46,19 @@ Feature: before and after hooks
             <?php
             describe("before and after callbacks", function() {
                 beforeEach(function() {
-                    echo "before each\n";
+                    echo "before one\n";
                 });
 
                 beforeEach(function() {
-                    echo "before each\n";
+                    echo "before two\n";
                 });
 
                 afterEach(function() {
-                    echo "after each\n";
+                    echo "after one\n";
+                });
+
+                afterEach(function() {
+                    echo "after two\n";
                 });
 
                 it("gets run in order", function() {
@@ -65,10 +69,11 @@ Feature: before and after hooks
         When I run `dspec BeforeAfterOrderSpec.php`
         Then the output should contain:
         """
-        before each
-        before each
+        before one
+        before two
         it
-        after each
+        after two
+        after one
         """
 
     Scenario: exception in beforeEach is captured and reported as failure

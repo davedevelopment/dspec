@@ -94,7 +94,7 @@ class ExampleGroup extends Node
             if ($parent) {
                 $parent->runHooks($name, $context, $reverse);
             }
-            foreach (array_reverse($hooks) as $hook) {
+            foreach ($hooks as $hook) {
                 $hook->run($context); 
             }
         } 
