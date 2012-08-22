@@ -152,7 +152,7 @@ ds::describe("something", function() {
 ```
 
 Alternatively, DSpec includes your test files within the scope of the
-`DSpec\Compiler`, so you can also use `$this`, but I think it's a little ugly:
+`DSpec\Context\SpecContext`, so you can also use `$this`, but I think it's a little ugly:
 
 ``` php
 <?php 
@@ -166,13 +166,9 @@ $this->describe("something", function() {
 });
 ```
 
-Due to the way the `DSpec` class uses statics, the above method is
-how the `DSpec\Compiler` is tested in `spec/DSpec/CompilerSpec.php`
-
 Todo
 ----
 
-* Hamcrest service provider
 * More tests
 * Logging would be nice for debugging
 * Documentation
