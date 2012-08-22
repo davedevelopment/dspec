@@ -172,6 +172,7 @@ Todo
 * More tests
 * Logging would be nice for debugging
 * Documentation
+* Profile and improve memory consumption
 
 Contributing
 ------------
