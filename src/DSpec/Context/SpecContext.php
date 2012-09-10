@@ -6,6 +6,7 @@ use SplStack;
 use DSpec\ExampleGroup;
 use DSpec\Example;
 use DSpec\Hook;
+use DSpec\Expectation\Subject;
 
 /**
  * This file is part of dspec
@@ -111,5 +112,14 @@ class SpecContext extends AbstractContext
         }
 
         return $this->__stack->bottom();
+    }
+
+    /**
+     * @param mixed subject
+     * @return Subject
+     */
+    public function expect($subject)
+    {
+        return new Subject($subject);
     }
 }

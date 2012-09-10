@@ -17,7 +17,7 @@ describe("ExampleGroup", function() {
             $this->eg->add($innerEg);
             $this->eg->add(new DSpec\Hook("beforeEach", $closure));
             $this->eg->add(new DSpec\Example("one", $closure));
-            assertThat($this->eg->total(), equalTo(2));
+            expect($this->eg->total())->toEqual(2);
         });
     });
 
@@ -29,7 +29,7 @@ describe("ExampleGroup", function() {
             $this->eg->add($innerEg);
             $this->eg->add(new DSpec\Hook("beforeEach", $closure));
             $this->eg->add(new DSpec\Example("one", $closure));
-            assertThat(count($this->eg->getDescendants()), equalTo(4));
+            expect(count($this->eg->getDescendants()))->toEqual(4);
         });
     });
 
@@ -52,11 +52,11 @@ describe("ExampleGroup", function() {
 
         it("run examples", function() {
             $obj = (object) ['count' => 0];
-            $closure = function() use ($obj) { $obj++; };
+            $closure = function() use ($obj) { $obj->count++; };
             $this->eg->add(new DSpec\Example("one", $closure));
             $this->eg->add(new DSpec\Example("two", $closure));
             $this->eg->run($this->reporter);
-            assertThat($obj->count, 2);
+            expect($obj->count)->toEqual(2);
         });
 
         context("when hooks are present", function() {
@@ -73,7 +73,7 @@ describe("ExampleGroup", function() {
                 $this->eg->add(new DSpec\Example("one", $this->factory->__invoke("B")));
                 $this->eg->add(new DSpec\Hook("afterEach", $this->factory->__invoke("C")));
                 $this->eg->run($this->reporter);
-                assertThat($this->obj->string, equalTo("ABC"));
+                expect($this->obj->string)->toEqual("ABC");
             });
 
             it("runs them in the in the correct order", function() {
@@ -86,7 +86,7 @@ describe("ExampleGroup", function() {
                 $this->eg->add(new DSpec\Hook("afterEach", $this->factory->__invoke("E")));
                 $this->eg->add(new DSpec\Example("one", $this->factory->__invoke("F")));
                 $this->eg->run($this->reporter);
-                assertThat($this->obj->string, equalTo("DABCEDFE"));
+                expect($this->obj->string)->toEqual("DABCEDFE");
             });
 
         });

@@ -16,7 +16,8 @@
         "symfony/console": "2.1.*",
         "symfony/finder": "2.1.*",
         "symfony/event-dispatcher": "2.1.*",
-        "pimple/pimple": "dev-master"
+        "pimple/pimple": "dev-master",
+        "beberlei/assert": "*"
     },
 
     "suggest": {

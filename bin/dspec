@@ -41,6 +41,10 @@ if (!getenv('DSPEC_NO_GLOBALS')) {
     function fail($msg = "{no message}") {
         ds::fail($msg);
     }
+
+    function expect($subject) {
+        return ds::expect($subject);
+    }
 }
 
 $app = new DSpec\Console\DSpecApplication(new DSpec\Container());
