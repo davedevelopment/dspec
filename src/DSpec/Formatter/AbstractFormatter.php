@@ -28,7 +28,9 @@ abstract class AbstractFormatter implements FormatterInterface, EventSubscriberI
         $this->output->getFormatter()->setStyle('dspec-fail', new OutputFormatterStyle('red'));
         $this->output->getFormatter()->setStyle('dspec-bold-fail', new OutputFormatterStyle('red', null, array('bold')));
         $this->output->getFormatter()->setStyle('dspec-pending', new OutputFormatterStyle('blue'));
+        $this->output->getFormatter()->setStyle('dspec-bold-pending', new OutputFormatterStyle('blue'));
         $this->output->getFormatter()->setStyle('dspec-skipped', new OutputFormatterStyle('yellow'));
+        $this->output->getFormatter()->setStyle('dspec-bold-skipped', new OutputFormatterStyle('yellow'));
         $this->output->getFormatter()->setStyle('dspec-pass', new OutputFormatterStyle('green'));
         $this->output->getFormatter()->setStyle('dspec-bold-pass', new OutputFormatterStyle('green', null, array('bold')));
         $this->output->getFormatter()->setStyle('dspec-meta', new OutputFormatterStyle('white', null, array()));
