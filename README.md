@@ -99,9 +99,25 @@ describe("Context", function() {
     });
 });
 
-``` php
+``` 
 
-Using $this is totally optional, using regular variable binding with your closures
+Using $this is totally optional, in PHP 5.3 you can use `let` and injection to pass vars around:
+
+``` php
+<?php
+
+describe("test", function() {
+    let("objA", function() {
+        return new stdClass;
+    });
+
+    it("has acccess to objA", function($objA) {
+        assertThat($objA, anInstanceOf("stdClass"));
+    });
+});
+```
+
+Using regular variable binding with your closures
 is an alternative option, but can be a bit messier;
 
 ``` php
