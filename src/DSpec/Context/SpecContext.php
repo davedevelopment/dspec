@@ -60,6 +60,17 @@ class SpecContext extends AbstractContext
     }
 
     /**
+     * Let 
+     *
+     * @param string $name
+     * @param \Closure $closure
+     */
+    public function let($name, \Closure $closure)
+    {
+        $this->__stack->top()->getContext()->setFactory($name, $closure);
+    }
+
+    /**
      * It
      *
      * @param string $example

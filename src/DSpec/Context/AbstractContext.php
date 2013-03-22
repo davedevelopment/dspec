@@ -18,11 +18,26 @@ use DSpec\Exception\PendingExampleException;
 class AbstractContext
 {
     protected $__data = array();
+    protected $__factories = array();
 
     public function run(\Closure $closure)
     {
-        $closure = $closure->bindTo($this);
-        $closure();
+        if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
+            $closure = $closure->bindTo($this);
+        }
+
+        $rfc = new \ReflectionFunction($closure);
+        $args = array(); 
+            
+        foreach ($rfc->getParameters() as $param) {
+            if (!isset($this->{$param->getName()})) {
+                throw new \InvalidArgumentException("This context does not have a variable named {$param->getName()}");
+            }
+
+            $args[] = $this->{$param->getName()};
+        } 
+
+        return call_user_func_array($closure, $args);
     }
 
     /**
@@ -49,6 +64,11 @@ class AbstractContext
         throw new FailedExampleException($message);
     }
 
+    public function setFactory($name, \Closure $closure)
+    {
+        $this->__factories[$name] = $closure;      
+    }
+
     public function __set($name, $value)
     {
         $this->__data[$name] = $value;
@@ -58,6 +78,12 @@ class AbstractContext
     {
         if (array_key_exists($name, $this->__data)) {
             return $this->__data[$name];
+        }
+
+        if (array_key_exists($name, $this->__factories)) {
+            $value = $this->run($this->__factories[$name]);
+            $this->__data[$name] = $value;
+            return $value;
         }
 
         $trace = debug_backtrace();
@@ -71,7 +97,7 @@ class AbstractContext
 
     public function __isset($name)
     {
-        return isset($this->__data[$name]);
+        return isset($this->__data[$name]) || isset($this->__factories[$name]);
     }
 
     public function __unset($name)
