@@ -59,12 +59,12 @@ class ConfigServiceProvider implements ServiceProviderInterface
                 }
 
                 $result = $container['config.parser']->parse(file_get_contents($container['config.path']));
-                $config = static::configMerge($config, $result);
+                $config = ConfigServiceProvider::configMerge($config, $result);
             } else {
                 foreach ($container['config.default_paths'] as $path) {
                     if (file_exists($path)) {
                     $result = $container['config.parser']->parse(file_get_contents($path));
-                        $config = static::configMerge($config, $result);
+                        $config = ConfigServiceProvider::configMerge($config, $result);
                     }
                 }
             }
@@ -143,7 +143,7 @@ class ConfigServiceProvider implements ServiceProviderInterface
                     $result[] = $value;
                 } elseif (array_key_exists($key, $result) && is_array($result[$key]) && is_array($value)) {
                     // Recurse only when both values are arrays.
-                    $result[$key] = static::configMerge($result[$key], $value);
+                    $result[$key] = ConfigServiceProvider::configMerge($result[$key], $value);
                 } else {
                     // Otherwise, use the latter value.
                     $result[$key] = $value;
