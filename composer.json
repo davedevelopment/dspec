@@ -1,7 +1,7 @@
 {
     "name": "davedevelopment/dspec",
     "minimum-stability": "dev",
-    "description": "A BDD spec style testing tool for PHP 5.4",
+    "description": "A BDD spec style testing tool for PHP 5.3",
     "license": "MIT",
 
     "require-dev": {

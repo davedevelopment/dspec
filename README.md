@@ -3,7 +3,7 @@ dspec
 
 [![Build Status](https://secure.travis-ci.org/davedevelopment/dspec.png?branch=master)](http://travis-ci.org/davedevelopment/dspec)
 
-`dspec` is a BDD style testing tool for PHP 5.4+. It's a little flaky. It's
+`dspec` is a BDD style testing tool for PHP 5.3. It's a little flaky. It's
 meant to be like the awesome [mocha](http://visionmedia.github.com/mocha/), but
 obviously not that good. There aren't any matchers, I use
 [Hamcrest](http://code.google.com/p/hamcrest/source/browse/trunk/hamcrest-php/)
