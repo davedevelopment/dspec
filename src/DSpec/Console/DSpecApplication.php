@@ -125,8 +125,9 @@ class DSpecApplication extends Application
 
         $provider->register($this->getContainer());
 
+        $container = $this->getContainer();
         foreach ($values as $key => $value) {
-            $this->getContainer()[$key] = $value;
+            $container[$key] = $value;
         }
 
         $this->registeredProviders[] = $provider;
