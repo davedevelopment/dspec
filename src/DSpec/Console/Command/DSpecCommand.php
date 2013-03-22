@@ -54,8 +54,8 @@ class DSpecCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        if (version_compare(PHP_VERSION, '5.4.0', '<')) {
-            throw new \RunTimeException("dspec requires PHP >= 5.4.0");
+        if (version_compare(PHP_VERSION, '5.3.0', '<')) {
+            throw new \RunTimeException("dspec requires PHP >= 5.3.0");
         }
 
         $container = $this->container;
@@ -79,7 +79,8 @@ class DSpecCommand extends Command
             }
 
             if (is_dir($p)) {
-                foreach ((new Finder)->in($p)->files()->name("*Spec.php") as $f) {
+                $finder = new Finder;
+                foreach ($finder->in($p)->files()->name("*Spec.php") as $f) {
                     $files[] = $f->getRealPath();
                 }
                 continue;
@@ -99,7 +100,10 @@ class DSpecCommand extends Command
             $requestedFormatters = array();
             foreach ($input->getOption('formatter') as $f) {
                 $parts = explode(':', $f);
-                $requestedFormatters[$parts[0]] = isset($parts[1]) ? (object)['out' => $parts[1]] : (object)[];
+                $requestedFormatters[$parts[0]] = new \stdClass;
+                if (isset($parts[1])) {
+                    $requestedFormatters[$parts[0]]->out = $parts[1];
+                }
             }
         }
 
@@ -123,7 +127,8 @@ class DSpecCommand extends Command
                 }
 
                 $options = (array) $options;
-                $formatter = (new $class($options))->setOutput($out);
+                $formatter = new $class($options);
+                $formatter->setOutput($out);
             } else {
                 if (isset($container[$f])) {
                     $formatter = $container[$f];

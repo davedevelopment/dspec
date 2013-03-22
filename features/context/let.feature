@@ -12,6 +12,7 @@ Feature: Clean context per example
                         hamcrest.globals: true
             """
 
+    @php5.4
     Scenario: Let var is available on $this
         Given a file named "context.feature" with:
             """
@@ -50,6 +51,7 @@ Feature: Clean context per example
         When I run `dspec context.feature`
         Then the output should contain "1 example passed"
 
+    @php5.4
     Scenario: Let var is memoized
         Given a file named "context.feature" with:
             """
@@ -69,6 +71,7 @@ Feature: Clean context per example
         When I run `dspec context.feature`
         Then the output should contain "1 example passed"
 
+    @php5.4
     Scenario: Let var can use other lets
         Given a file named "context.feature" with:
             """

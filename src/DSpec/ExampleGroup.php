@@ -15,8 +15,6 @@ use DSpec\Context\AbstractContext;
 
 class ExampleGroup extends Node 
 {
-    use Timeable;
-
     protected $parent;
     protected $context;
     protected $examples = array();
@@ -24,6 +22,9 @@ class ExampleGroup extends Node
         'beforeEach' => array(),
         'afterEach' => array(),
     );
+    protected $startTime;
+    protected $endTime;
+
 
     public function __construct($description, AbstractContext $context, ExampleGroup $parent = null)
     {
@@ -210,5 +211,23 @@ class ExampleGroup extends Node
     public function restoreErrorHandler()
     {
         restore_error_handler();
+    }
+
+    public function startTimer()
+    {
+        $this->startTime = microtime();
+    }
+
+    public function endTimer()
+    {
+        $this->endTime = microtime();
+    }
+
+    public function getTime()
+    {
+        $start = array_sum(explode(" ", $this->startTime));
+        $end   = array_sum(explode(" ", $this->endTime));
+
+        return $end - $start;
     }
 }

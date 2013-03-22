@@ -45,9 +45,11 @@ class Progress extends AbstractFormatter implements FormatterInterface
     {
         $this->output->writeln("");
         $this->output->writeln("");
-        $summary = (new Summary())->setOutput($this->output);
+        $summary = new Summary();
+        $summary->setOutput($this->output);
         $summary->format($r, $suite, $verbose);
-        $failureTree = (new FailureTree)->setOutput($this->output);
+        $failureTree = new FailureTree();
+        $failureTree->setOutput($this->output);
         $failureTree->format($r, $suite, $verbose);
     }
 

@@ -33,9 +33,11 @@ class Spec extends Summary implements FormatterInterface
         $this->traverse($suite, $this->output, 0, $verbosity);
         $this->output->writeln("");
 
-        $summary = (new Summary())->setOutput($this->output);
+        $summary = new Summary();
+        $summary->setOutput($this->output);
         $summary->format($r, $suite, $verbosity);
-        $failureTree = (new FailureTree)->setOutput($this->output);
+        $failureTree = new FailureTree();
+        $failureTree->setOutput($this->output);
         $failureTree->format($r, $suite, $verbosity);
 
         $this->output->writeln("");

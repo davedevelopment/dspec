@@ -15,8 +15,6 @@ use DSpec\Context\AbstractContext;
 
 class Example extends Node
 {
-    use Timeable;
-
     const RESULT_PASSED = 'passed';
     const RESULT_FAILED = 'failed';
     const RESULT_PENDING = 'pending';
@@ -27,6 +25,8 @@ class Example extends Node
     protected $failureException;
     protected $pendingMessage;
     protected $skippedMessage;
+    protected $startTime;
+    protected $endTime;
 
     public function __construct($example, \Closure $closure)
     {
@@ -115,5 +115,23 @@ class Example extends Node
     public function getResult()
     {
         return $this->result;
+    }
+
+    public function startTimer()
+    {
+        $this->startTime = microtime();
+    }
+
+    public function endTimer()
+    {
+        $this->endTime = microtime();
+    }
+
+    public function getTime()
+    {
+        $start = array_sum(explode(" ", $this->startTime));
+        $end   = array_sum(explode(" ", $this->endTime));
+
+        return $end - $start;
     }
 }

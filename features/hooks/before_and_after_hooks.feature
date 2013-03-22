@@ -3,6 +3,7 @@ Feature: before and after hooks
     Use `before` and `after` hooks to execute arbitrary code before and/or
     after the body of an example is run:
 
+    @php5.4
     Scenario: define beforeEach block
         Given a file named "BeforeEachSpec.php" with:
             """

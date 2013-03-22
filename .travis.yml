@@ -12,4 +12,6 @@ before_script:
   - curl http://getcomposer.org/installer | php
   - php composer.phar install --dev
 
-script: bin/dspec && bin/behat -fprogress 
+script: 
+    - if [ $(phpenv version-name) = "5.4" ]; then bin/dspec && bin/behat -fprogress; fi
+    - if [ $(phpenv version-name) = "5.3" ]; then bin/behat -fprogress --tags="~@php5.4"; fi

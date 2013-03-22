@@ -79,7 +79,8 @@ class SpecContext extends AbstractContext
     public function it($example, \Closure $closure = null)
     {
         if ($closure === null) {
-            $closure = function() { $this->pending(); };
+            $that = $this;
+            $closure = function() use ($that) { $that->pending(); };
         }
         $example = new Example($example, $closure);
         $example->setParent($this->__stack->top());

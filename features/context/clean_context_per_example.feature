@@ -3,6 +3,7 @@ Feature: Clean context per example
     As a developer
     I want the execution context to be clean for every example
 
+    @php5.4
     Scenario: Object is not available in subsequent examples
         Given a file named "context.feature" with:
             """
