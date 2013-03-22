@@ -110,8 +110,8 @@ Feature: Clean context per example
                     return new stdClass;
                 });
 
-                it("should be a stdClass", function() {
-                    assertThat($this->obj->other, identicalTo($this->otherObj));
+                it("should be a stdClass", function($obj, $otherObj) {
+                    assertThat($obj->other, identicalTo($otherObj));
                 });
 
             });
