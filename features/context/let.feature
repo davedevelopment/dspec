@@ -1,4 +1,4 @@
-Feature: Clean context per example
+Feature: Factories for context vars
     In order to help my tests be more readable
     As a developer 
     I want the to describe the setup of individual vars
