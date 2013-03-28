@@ -10,6 +10,9 @@ obviously not that good. There aren't any matchers, I use
 for the that, if you want mocks and stubs, use
 [Mockery](http://github.com/padraic/mockery).
 
+For more info, see the
+[Documentation](https://www.relishapp.com/davedevelopment/dspec/docs).
+
 Installation
 ------------
 
