@@ -1,9 +1,9 @@
-Feature: Disable defining the dspec global functions
+Feature: Disabling the dspec global functions
     In order to prevent name clashes
     As a developer
     I need to prevent dspec loading the global functions
 
-    Scenario: Globals disabled via env
+    Scenario: Disable global via with an environment variable
         Given a file named "TestSpec.php" with:
             """php
             <?php
