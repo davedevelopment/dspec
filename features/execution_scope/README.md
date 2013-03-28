@@ -1,6 +1,3 @@
-Execution Scope
----------------
-
 The closures in the various methods get bound to a Context object, which is
 cloned throughout the test run, in an attempt to share context where
 appropriate, but allow each example a clean version of that shared context. This
