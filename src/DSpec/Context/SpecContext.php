@@ -126,12 +126,4 @@ class SpecContext extends AbstractContext
         return $this->__stack->bottom();
     }
 
-    /**
-     * @param mixed subject
-     * @return Subject
-     */
-    public function expect($subject)
-    {
-        return new Subject($subject);
-    }
 }
