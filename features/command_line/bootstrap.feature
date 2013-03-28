@@ -3,9 +3,12 @@ Feature: Execute a php bootstrap file
     As a developer
     I want to specify a php file for bootstrapping
 
-    Scenario: User specifies bootstrap file
+    Scenario: Specifying a bootstrap file 
+
+        You can specify a file to be included before running your test suites via the command line switch `-b`. 
+        
         Given a file named "bootstrap.php" with:
-            """
+            """php
             <?php 
                 echo 'dave';
             """

@@ -3,9 +3,9 @@ Feature: Pretty print specs and results
     As a developer
     I want to see the titles, context and grouping in the results
 
-    Scenario: Shows a passing test
+    Scenario: Passing tests 
         Given a file named "TestSpec.php" with:
-            """
+            """php
             <?php
 
             describe("Dog", function() {

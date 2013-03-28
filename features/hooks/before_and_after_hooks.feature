@@ -1,4 +1,4 @@
-Feature: before and after hooks
+Feature: Before and After hooks
 
     Use `before` and `after` hooks to execute arbitrary code before and/or
     after the body of an example is run:
@@ -6,7 +6,7 @@ Feature: before and after hooks
     @php5.4
     Scenario: define beforeEach block
         Given a file named "BeforeEachSpec.php" with:
-            """
+            """php
             <?php
 
             class Thing {
@@ -41,9 +41,9 @@ Feature: before and after hooks
         When I run `dspec BeforeEachSpec.php`
         Then the output should contain "3 examples passed"
 
-    Scenario: before/after blocks are run in order
+    Scenario: Hooks are run in the order they are defined
         Given a file named "BeforeAfterOrderSpec.php" with:
-            """
+            """php
             <?php
             describe("before and after callbacks", function() {
                 beforeEach(function() {
@@ -77,9 +77,9 @@ Feature: before and after hooks
         after one
         """
 
-    Scenario: exception in beforeEach is captured and reported as failure
+    Scenario: An Exception in a beforeEach is captured and reported as failure
         Given a file named "ExceptionInBeforeEachSpec.php" with:
-            """
+            """php
             <?php 
             describe("exception in beforeEach", function() {
                 beforeEach(function() {
@@ -95,9 +95,9 @@ Feature: before and after hooks
         Then the output should contain "1 of 1 examples failed"
 
 
-    Scenario: exception in afterEach is captured and reported as failure
+    Scenario: An Exception in a afterEach is captured and reported as failure
         Given a file named "ExceptionInAfterEachSpec.php" with:
-            """
+            """php
             <?php 
             describe("exception in afterEach", function() {
                 afterEach(function() {
