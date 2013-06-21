@@ -1,11 +1,11 @@
-Feature: See failure details
+Feature: Displaying failures
     In order to fix my code
     As a developer
     I need to see the details of the failed tests
 
-    Scenario: See failure exception
+    Scenario: Display Failure exception messages
         Given a file named "FailSpec.php" with:
-            """
+            """php
             <?php
 
             describe("fail1", function() {
@@ -19,9 +19,9 @@ Feature: See failure details
         And the output should contain "will fail2"
         And the output should contain "fail1"
 
-    Scenario: See failure exception with stack trace in verbose mode
+    Scenario: Display stack trace in verbose mode
         Given a file named "FailSpec.php" with:
-            """
+            """php
             <?php
 
             describe("fail1", function() {

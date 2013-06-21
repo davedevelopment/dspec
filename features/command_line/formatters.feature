@@ -3,7 +3,7 @@ Feature: Specify formatters on the command line
     As a developer
     I need to specify the formatter
 
-    Scenario: Specify one formatter
+    Scenario: Specify a formatter on the command line
         Given a file named "TestSpec.php" with:
             """
             <?php
@@ -18,7 +18,7 @@ Feature: Specify formatters on the command line
         And the output should not contain ".."
         And the output should not contain "Failures:"
 
-    Scenario: Specify two formatters 
+    Scenario: Specify multiple formatters on the command line
         Given a file named "TestSpec.php" with:
             """
             <?php

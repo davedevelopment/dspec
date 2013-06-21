@@ -4,9 +4,9 @@ Feature: Clean context per example
     I want the execution context to be clean for every example
 
     @php5.4
-    Scenario: Object is not available in subsequent examples
+    Scenario: Context is not tainted by previous examples
         Given a file named "context.feature" with:
-            """
+            """php
             <?php
             describe("top level", function() {
 

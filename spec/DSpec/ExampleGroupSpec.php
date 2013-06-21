@@ -17,7 +17,7 @@ describe("ExampleGroup", function() {
             $this->eg->add($innerEg);
             $this->eg->add(new DSpec\Hook("beforeEach", $closure));
             $this->eg->add(new DSpec\Example("one", $closure));
-            expect($this->eg->total())->toEqual(2);
+            assertThat($this->eg->total(), equalTo(2));
         });
     });
 
@@ -29,7 +29,7 @@ describe("ExampleGroup", function() {
             $this->eg->add($innerEg);
             $this->eg->add(new DSpec\Hook("beforeEach", $closure));
             $this->eg->add(new DSpec\Example("one", $closure));
-            expect(count($this->eg->getDescendants()))->toEqual(4);
+            assertThat(count($this->eg->getDescendants()), equalTo(4));
         });
     });
 
@@ -56,7 +56,7 @@ describe("ExampleGroup", function() {
             $this->eg->add(new DSpec\Example("one", $closure));
             $this->eg->add(new DSpec\Example("two", $closure));
             $this->eg->run($this->reporter);
-            expect($obj->count)->toEqual(2);
+            assertThat($obj->count, equalTo(2));
         });
 
         context("when hooks are present", function() {
@@ -73,7 +73,7 @@ describe("ExampleGroup", function() {
                 $this->eg->add(new DSpec\Example("one", $this->factory->__invoke("B")));
                 $this->eg->add(new DSpec\Hook("afterEach", $this->factory->__invoke("C")));
                 $this->eg->run($this->reporter);
-                expect($this->obj->string)->toEqual("ABC");
+                assertThat($this->obj->string, equalTo("ABC"));
             });
 
             it("runs them in the in the correct order", function() {
@@ -86,7 +86,7 @@ describe("ExampleGroup", function() {
                 $this->eg->add(new DSpec\Hook("afterEach", $this->factory->__invoke("E")));
                 $this->eg->add(new DSpec\Example("one", $this->factory->__invoke("F")));
                 $this->eg->run($this->reporter);
-                expect($this->obj->string)->toEqual("DABCEDFE");
+                assertThat($this->obj->string, equalTo("DABCEDFE"));
             });
 
         });
