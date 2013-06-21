@@ -48,7 +48,8 @@ class DSpecCommand extends Command
             ->setName('dspec')
             ->setDescription('run dspec')
             ->addArgument('specs', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'Files/dirs to run')
-            ->addOption('formatter', 'f', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Formatter to use');
+            ->addOption('formatter', 'f', InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Formatter to use')
+            ->addOption('repeat', null, InputOption::VALUE_REQUIRED , 'Repeat run X times');
         ;
     }
 
@@ -167,7 +168,10 @@ class DSpecCommand extends Command
         $container['dispatcher']->dispatch(Events::COMPILER_END, new Event());
 
         $container['dispatcher']->dispatch(Events::SUITE_START, new SuiteStartEvent($suite));
-        $suite->run($reporter);
+        $repeat = $input->getOption('repeat') ?: 1;
+        for ($i = 0; $i < $repeat; $i++) {
+            $suite->run($reporter);
+        }
         $container['dispatcher']->dispatch(Events::SUITE_END, new SuiteEndEvent($suite, $reporter));
 
         foreach($formatters as $f) {
