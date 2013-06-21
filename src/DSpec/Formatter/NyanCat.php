@@ -40,7 +40,7 @@ class NyanCat extends AbstractFormatter implements FormatterInterface
                     empty($_SERVER['TERM']) ? 'unknown' : $_SERVER['TERM']
                 ),
                 array('-', '_'),
-                34
+                74
             ),
             array(
                 new Team('pass', 'green', '.'),
