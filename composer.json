@@ -8,7 +8,8 @@
         "davedevelopment/montserrat": "*@dev",
         "mockery/mockery": "*",
         "davedevelopment/hamcrest-php": "*@dev",
-        "monolog/monolog": "*"
+        "monolog/monolog": "*",
+        "whatthejeff/nyancat-scoreboard": "~1.1"
     },
 
     "require": {
