@@ -33,6 +33,10 @@ class NyanCat extends AbstractFormatter implements FormatterInterface
 {
     public function __construct()
     {
+        if (!class_exists("NyanCat\Scoreboard")) {
+            throw new \InvalidArgumentException("The NyanCat formatter requires the whatthejeff/nyancat-scoreboard library");
+        }
+        
         $this->scoreboard = new Scoreboard(
             new Cat(),
             new Rainbow(
